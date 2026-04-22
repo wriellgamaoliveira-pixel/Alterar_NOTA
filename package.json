@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
- "homepage": "https://wriellgamaoliveira-pixel.github.io/Afterar_NOTA",
+ "homepage": "https://wriellgamaoliveira-pixel.github.io/Alterar_NOTA",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
