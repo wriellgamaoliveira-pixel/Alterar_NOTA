@@ -3,8 +3,7 @@ import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
 
 export default defineConfig({
-  base: '/Afterar_NOTA/',   // ou '/portal-fiscal-xml/' se criar um novo repo
-  // ... resto da config
+  base: '/Afterar_NOTA/',
   plugins: [react()],
   server: {
     port: 3000,
