@@ -1,73 +1,129 @@
-# React + TypeScript + Vite
+# Portal Fiscal XML
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Sistema web para processamento, visualizacao e alteracao de notas fiscais eletronicas brasileiras (NFCom, NF-e, NFC-e, NFS-e).
 
-Currently, two official plugins are available:
+**Funciona 100% no navegador** - seus dados XML nunca saem do seu computador.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## Funcionalidades
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Funcionalidade | Descricao |
+|---|---|
+| **Nota Unica** | Visualize os detalhes de um XML individual (emitente, destinatario, itens, impostos, totais) |
+| **Relatorio por cClass** | KPIs, grafico Top 12, tabela por cClass com drill-down (cClass > CFOP > notas) e exportacao CSV |
+| **Relatorio por Imposto** | Analise por CST ICMS + CFOP, impostos retidos (IPI, PIS, COFINS) e exportacao CSV |
+| **Relatorio CST** | Disponivel para NF-e e NFC-e - analise detalhada por CST ICMS com itens flat |
+| **Alteracao em Lote** | 4 operacoes para modificar XMLs em massa: cClass/CFOP, descricao, remover CFOP por ICMS, remover CFOP por cClass |
+| **Exportacao CSV** | Todos os relatorios exportam CSV com BOM UTF-8 e delimitador `;` (compativel Excel BR) |
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Modulos Fiscais Suportados
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **NFCom** (Modelo 62) - Nota Fiscal de Comunicacao
+- **NF-e** (Modelo 55) - Nota Fiscal Eletronica
+- **NFC-e** (Modelo 65) - Nota Fiscal do Consumidor Eletronica
+- **NFS-e** - Nota Fiscal de Servicos
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Como usar no GitHub Pages
+
+### 1. Crie um repositorio no GitHub
+
+Acesse https://github.com/new e crie um repositorio chamado `portal-fiscal-xml`.
+
+### 2. Suba o codigo
+
+Execute os comandos abaixo na pasta do projeto:
+
+```bash
+# Inicialize o git
+git init
+
+# Adicione todos os arquivos
+git add .
+
+# Faca o primeiro commit
+git commit -m "Primeiro commit - Portal Fiscal XML"
+
+# Conecte ao seu repositorio do GitHub (substitua SEU-USUARIO)
+git remote add origin https://github.com/SEU-USUARIO/portal-fiscal-xml.git
+
+# Envie para o GitHub
+git push -u origin main
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+> Se a branch padrao for `master` em vez de `main`, use: `git push -u origin master`
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### 3. Configure o GitHub Pages
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1. No GitHub, va ate o repositorio > **Settings** > **Pages**
+2. Em **Source**, selecione **GitHub Actions**
+3. O workflow de deploy sera executado automaticamente
+
+Ou alternativamente, use branch `gh-pages`:
+
+1. Va em **Settings** > **Pages**
+2. Em **Source**, selecione **Deploy from a branch**
+3. Selecione a branch `gh-pages` e pasta `/ (root)`
+4. Clique em **Save**
+
+### 4. Acesse seu site
+
+Apos o deploy (pode levar 1-2 minutos), acesse:
+
 ```
+https://SEU-USUARIO.github.io/portal-fiscal-xml/
+```
+
+---
+
+## Desenvolvimento Local
+
+```bash
+# Instale as dependencias
+npm install
+
+# Rode em modo desenvolvimento
+npm run dev
+
+# Faca o build de producao
+npm run build
+
+# Preview do build
+npm run preview
+```
+
+---
+
+## Tecnologias
+
+- React + TypeScript + Vite
+- Tailwind CSS + shadcn/ui
+- Recharts (graficos)
+- JSZip (processamento ZIP)
+- PapaParse (exportacao CSV)
+- DOMParser (parse XML - nativo do navegador)
+
+---
+
+## Estrutura do Projeto
+
+```
+src/
+  components/shared/   # Componentes reutilizaveis (Navbar, UploadDropzone, etc.)
+  context/             # Contexto do modulo fiscal ativo
+  pages/               # Paginas principais
+  parsers/             # Parsers XML para cada tipo de nota fiscal
+  types/               # Tipos TypeScript
+public/
+  (vazio - assets sao importados)
+```
+
+---
+
+## Licenca
+
+MIT
