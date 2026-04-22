@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "homepage": "https://seu-usuario.github.io/portal-fiscal-xml",
+ "homepage": "https://wriellgamaoliveira-pixel.github.io/Afterar_NOTA",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
