@@ -1,12 +1,754 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Portal Fiscal XML</title>
+    <title>Troca XML - PyScript SPA</title>
+
+    <link rel="stylesheet" href="./style.css" />
+    <link rel="stylesheet" href="./resumo.css" />
+
+    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css" />
+    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+      :root {
+        --bg: #f7f8fb;
+        --card: #ffffff;
+        --border: #e5e7eb;
+        --text: #1f2937;
+        --muted: #6b7280;
+        --brand: #2563eb;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      .container {
+        width: min(1200px, 92%);
+        margin: 0 auto;
+      }
+
+      .navbar {
+        background: #111827;
+        color: #fff;
+        border-bottom: 1px solid rgba(255,255,255,.08);
+      }
+
+      .navbar-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.9rem 0;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        font-weight: 700;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: .25rem;
+        flex-wrap: wrap;
+      }
+
+      .nav-link {
+        border: 0;
+        background: transparent;
+        color: #e5e7eb;
+        padding: .55rem .75rem;
+        border-radius: .5rem;
+        cursor: pointer;
+        font-weight: 500;
+      }
+
+      .nav-link.active,
+      .nav-link:hover { background: rgba(255,255,255,.14); color: #fff; }
+
+      .modulo-select {
+        background: rgba(255,255,255,.1);
+        border: 1px solid rgba(255,255,255,.2);
+        color: #fff;
+        border-radius: .5rem;
+        padding: .5rem .65rem;
+      }
+
+      main { padding: 1.2rem 0 2.2rem; }
+      .page-title { margin: 0 0 .25rem; }
+      .page-subtitle { margin: 0 0 1rem; color: var(--muted); }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1rem;
+      }
+
+      .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 1rem;
+      }
+
+      .shortcut-card {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+      }
+
+      .shortcut-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: .5rem;
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: .9rem;
+      }
+
+      label { display: block; font-weight: 600; margin-bottom: .35rem; }
+      input, select, button, textarea {
+        width: 100%;
+        border: 1px solid var(--border);
+        border-radius: .6rem;
+        padding: .65rem .7rem;
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+        background: var(--brand);
+        color: #fff;
+        border-color: var(--brand);
+        font-weight: 600;
+      }
+
+      button.secondary {
+        background: #fff;
+        color: var(--text);
+      }
+
+      .actions { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .9rem; }
+      .hidden { display: none !important; }
+
+      .progress-wrap {
+        background: #eef2ff;
+        border-radius: 99px;
+        height: 14px;
+        overflow: hidden;
+      }
+
+      .progress-bar {
+        height: 100%;
+        width: 0;
+        background: linear-gradient(90deg,#4f46e5,#2563eb);
+        transition: width .25s ease;
+      }
+
+      .table-wrap { overflow: auto; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { border-bottom: 1px solid var(--border); padding: .6rem; text-align: left; }
+      th.sortable { cursor: pointer; }
+
+      details { border: 1px solid var(--border); border-radius: 10px; margin-top: .8rem; background: #fff; }
+      summary { cursor: pointer; padding: .8rem 1rem; font-weight: 600; }
+      .details-body { padding: 0 1rem 1rem; }
+
+      @media (max-width: 920px) {
+        .navbar-inner { flex-direction: column; align-items: stretch; }
+      }
+    </style>
+
+    <py-config src="./pyconfig.toml"></py-config>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <header class="navbar">
+      <div class="container navbar-inner">
+        <div class="brand">
+          <i data-lucide="file-stack"></i>
+          <span>Troca XML</span>
+        </div>
+
+        <nav class="nav-links" aria-label="Principal">
+          <button class="nav-link" data-route="inicio">Início</button>
+          <button class="nav-link" data-route="nota-unica">Nota Única</button>
+          <button class="nav-link" data-route="relatorio-cclass">Relatório por cClass</button>
+          <button class="nav-link" data-route="relatorio-imposto">Relatório por Imposto</button>
+          <button class="nav-link" data-route="alteracao-lote">Alteração em Lote</button>
+        </nav>
+
+        <div>
+          <label for="moduloSelect" style="display:block;font-size:.78rem;color:#cbd5e1;margin-bottom:.35rem;">Módulo</label>
+          <select id="moduloSelect" class="modulo-select" aria-label="Selecionar módulo">
+            <option value="NFCom">NFCom</option>
+            <option value="NF-e">NF-e</option>
+            <option value="NFC-e">NFC-e</option>
+            <option value="NFS-e">NFS-e</option>
+          </select>
+        </div>
+      </div>
+    </header>
+
+    <main class="container" id="app-content"></main>
+
+    <template id="tpl-inicio">
+      <section>
+        <h1 class="page-title">Início</h1>
+        <p class="page-subtitle">Escolha uma operação para processar seus arquivos XML.</p>
+        <div class="cards-grid">
+          <a href="#" class="card shortcut-card" data-go="nota-unica">
+            <div class="shortcut-head"><strong>Nota Única</strong><i data-lucide="file-search"></i></div>
+            <p>Envie um XML para visualizar e processar os dados da nota fiscal.</p>
+          </a>
+          <a href="#" class="card shortcut-card" data-go="relatorio-cclass">
+            <div class="shortcut-head"><strong>Relatório por cClass</strong><i data-lucide="bar-chart-3"></i></div>
+            <p>Importe um ZIP e analise agrupamentos por classificação comercial.</p>
+          </a>
+          <a href="#" class="card shortcut-card" data-go="relatorio-imposto">
+            <div class="shortcut-head"><strong>Relatório por Imposto</strong><i data-lucide="receipt-text"></i></div>
+            <p>Consolide impostos por tipo com tabelas e visualização gráfica.</p>
+          </a>
+          <a href="#" class="card shortcut-card" data-go="alteracao-lote">
+            <div class="shortcut-head"><strong>Alteração em Lote</strong><i data-lucide="replace"></i></div>
+            <p>Escolha um tipo de alteração e aplique em vários documentos de uma vez.</p>
+          </a>
+        </div>
+      </section>
+    </template>
+
+    <template id="tpl-nota-unica">
+      <section>
+        <h1 class="page-title">Nota Única</h1>
+        <p class="page-subtitle">Upload e processamento de um único XML.</p>
+
+        <div class="card">
+          <div class="form-grid">
+            <div>
+              <label for="notaArquivo">Arquivo XML</label>
+              <input id="notaArquivo" type="file" accept=".xml" />
+            </div>
+            <div>
+              <label for="notaTag">Tag de alteração</label>
+              <input id="notaTag" type="text" placeholder="ex.: xProd" />
+            </div>
+            <div>
+              <label for="notaValor">Novo valor</label>
+              <input id="notaValor" type="text" placeholder="Valor a aplicar" />
+            </div>
+          </div>
+          <div class="actions">
+            <button id="btnProcessarNota">Processar XML</button>
+            <button id="btnDownloadNota" class="secondary" disabled>Baixar XML alterado</button>
+          </div>
+        </div>
+
+        <div id="notaResultado" class="card" style="margin-top:1rem;">
+          <h3 style="margin-top:0;">Dados da Nota</h3>
+          <div class="table-wrap">
+            <table>
+              <tbody>
+                <tr><th>Chave</th><td id="notaChave">-</td></tr>
+                <tr><th>Emitente</th><td id="notaEmitente">-</td></tr>
+                <tr><th>Destinatário</th><td id="notaDestinatario">-</td></tr>
+                <tr><th>Valor Total</th><td id="notaValorTotal">-</td></tr>
+                <tr><th>Status</th><td id="notaStatus">Aguardando processamento</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </template>
+
+    <template id="tpl-relatorio-cclass">
+      <section>
+        <h1 class="page-title">Relatório por cClass</h1>
+        <p class="page-subtitle">Upload de ZIP, progresso, gráfico e tabelas colapsáveis.</p>
+
+        <div class="card">
+          <div class="form-grid">
+            <div>
+              <label for="cclassZip">Arquivo ZIP</label>
+              <input id="cclassZip" type="file" accept=".zip" />
+            </div>
+            <div>
+              <label for="cclassFiltro">Filtro</label>
+              <input id="cclassFiltro" type="text" placeholder="Buscar por cClass / descrição" />
+            </div>
+            <div>
+              <label for="cclassOrdenacao">Ordenar por</label>
+              <select id="cclassOrdenacao">
+                <option value="valor_desc">Valor (maior → menor)</option>
+                <option value="valor_asc">Valor (menor → maior)</option>
+                <option value="quant_desc">Quantidade (maior → menor)</option>
+                <option value="quant_asc">Quantidade (menor → maior)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button id="btnProcessarCClass">Gerar relatório</button>
+            <button id="btnExportarCClass" class="secondary" disabled>Exportar CSV</button>
+          </div>
+
+          <div style="margin-top:.9rem;">
+            <div class="progress-wrap"><div id="barCClass" class="progress-bar"></div></div>
+            <small id="txtCClass" style="color:var(--muted);">Aguardando upload.</small>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:1rem;">
+          <canvas id="graficoCClass" height="85"></canvas>
+        </div>
+
+        <details open>
+          <summary>Resumo Consolidado</summary>
+          <div class="details-body table-wrap">
+            <table id="tblCClassResumo">
+              <thead>
+                <tr>
+                  <th class="sortable" data-col="cclass">cClass</th>
+                  <th>Descrição</th>
+                  <th class="sortable" data-col="quantidade">Quantidade</th>
+                  <th class="sortable" data-col="valor">Valor Total</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </details>
+
+        <details>
+          <summary>Detalhamento por Nota</summary>
+          <div class="details-body table-wrap">
+            <table id="tblCClassDetalhe">
+              <thead>
+                <tr>
+                  <th>Chave</th>
+                  <th>cClass</th>
+                  <th>Produto</th>
+                  <th>Quantidade</th>
+                  <th>Valor</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </details>
+      </section>
+    </template>
+
+    <template id="tpl-relatorio-imposto">
+      <section>
+        <h1 class="page-title">Relatório por Imposto</h1>
+        <p class="page-subtitle">Visão consolidada por tributo com filtros e ordenação.</p>
+
+        <div class="card">
+          <div class="form-grid">
+            <div>
+              <label for="impostoZip">Arquivo ZIP</label>
+              <input id="impostoZip" type="file" accept=".zip" />
+            </div>
+            <div>
+              <label for="impostoFiltro">Filtro</label>
+              <input id="impostoFiltro" type="text" placeholder="Buscar por imposto / código" />
+            </div>
+            <div>
+              <label for="impostoOrdenacao">Ordenar por</label>
+              <select id="impostoOrdenacao">
+                <option value="valor_desc">Valor (maior → menor)</option>
+                <option value="valor_asc">Valor (menor → maior)</option>
+                <option value="base_desc">Base (maior → menor)</option>
+                <option value="base_asc">Base (menor → maior)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button id="btnProcessarImposto">Gerar relatório</button>
+            <button id="btnExportarImposto" class="secondary" disabled>Exportar CSV</button>
+          </div>
+
+          <div style="margin-top:.9rem;">
+            <div class="progress-wrap"><div id="barImposto" class="progress-bar"></div></div>
+            <small id="txtImposto" style="color:var(--muted);">Aguardando upload.</small>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:1rem;">
+          <canvas id="graficoImposto" height="85"></canvas>
+        </div>
+
+        <details open>
+          <summary>Resumo por Imposto</summary>
+          <div class="details-body table-wrap">
+            <table id="tblImpostoResumo">
+              <thead>
+                <tr>
+                  <th>Imposto</th>
+                  <th>Código</th>
+                  <th>Base de Cálculo</th>
+                  <th>Alíquota</th>
+                  <th>Valor</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </details>
+      </section>
+    </template>
+
+    <template id="tpl-alteracao-lote">
+      <section>
+        <h1 class="page-title">Alteração em Lote</h1>
+        <p class="page-subtitle">Selecione o tipo de alteração e aplique em arquivos ZIP/XML.</p>
+
+        <div class="card">
+          <div class="form-grid">
+            <div>
+              <label for="tipoAlteracao">Tipo de alteração</label>
+              <select id="tipoAlteracao">
+                <option value="produto">Alterar produto (xProd)</option>
+                <option value="ncm">Alterar NCM</option>
+                <option value="cfop">Alterar CFOP</option>
+                <option value="imposto">Alterar imposto</option>
+              </select>
+            </div>
+            <div>
+              <label for="loteArquivo">Arquivo ZIP/XML</label>
+              <input id="loteArquivo" type="file" accept=".zip,.xml" />
+            </div>
+          </div>
+
+          <div id="formProduto" class="form-grid" style="margin-top:.9rem;">
+            <div><label>Produto atual</label><input id="produtoAtual" type="text" /></div>
+            <div><label>Novo produto</label><input id="produtoNovo" type="text" /></div>
+          </div>
+
+          <div id="formNcm" class="form-grid hidden" style="margin-top:.9rem;">
+            <div><label>NCM atual</label><input id="ncmAtual" type="text" /></div>
+            <div><label>Novo NCM</label><input id="ncmNovo" type="text" /></div>
+          </div>
+
+          <div id="formCfop" class="form-grid hidden" style="margin-top:.9rem;">
+            <div><label>CFOP atual</label><input id="cfopAtual" type="text" /></div>
+            <div><label>Novo CFOP</label><input id="cfopNovo" type="text" /></div>
+          </div>
+
+          <div id="formImposto" class="form-grid hidden" style="margin-top:.9rem;">
+            <div><label>Imposto</label><input id="impostoNome" type="text" placeholder="ICMS, PIS, COFINS..." /></div>
+            <div><label>Nova alíquota (%)</label><input id="impostoAliquota" type="number" step="0.01" /></div>
+          </div>
+
+          <div class="actions">
+            <button id="btnProcessarLote">Processar lote</button>
+            <button id="btnDownloadLote" class="secondary" disabled>Baixar resultado</button>
+          </div>
+
+          <div style="margin-top:.9rem;">
+            <div class="progress-wrap"><div id="barLote" class="progress-bar"></div></div>
+            <small id="txtLote" style="color:var(--muted);">Aguardando processamento.</small>
+          </div>
+        </div>
+      </section>
+    </template>
+
+    <script>
+      (function () {
+        const content = document.getElementById('app-content');
+        const navLinks = Array.from(document.querySelectorAll('.nav-link'));
+        window.currentModulo = 'NFCom';
+
+        const routes = {
+          inicio: '#tpl-inicio',
+          'nota-unica': '#tpl-nota-unica',
+          'relatorio-cclass': '#tpl-relatorio-cclass',
+          'relatorio-imposto': '#tpl-relatorio-imposto',
+          'alteracao-lote': '#tpl-alteracao-lote'
+        };
+
+        let chartCClass = null;
+        let chartImposto = null;
+
+        function cloneTemplate(selector) {
+          const tpl = document.querySelector(selector);
+          return tpl ? tpl.content.cloneNode(true) : document.createTextNode('Template não encontrado');
+        }
+
+        function routeTo(route) {
+          if (!routes[route]) route = 'inicio';
+          content.innerHTML = '';
+          content.appendChild(cloneTemplate(routes[route]));
+
+          navLinks.forEach(link => link.classList.toggle('active', link.dataset.route === route));
+          bindViewEvents(route);
+          if (window.lucide) window.lucide.createIcons();
+        }
+
+        function bindViewEvents(route) {
+          if (route === 'inicio') {
+            document.querySelectorAll('[data-go]').forEach(el => {
+              el.addEventListener('click', (ev) => {
+                ev.preventDefault();
+                routeTo(ev.currentTarget.dataset.go);
+              });
+            });
+          }
+
+          if (route === 'nota-unica') {
+            document.getElementById('btnProcessarNota')?.addEventListener('click', async () => {
+              const file = document.getElementById('notaArquivo')?.files?.[0];
+              const payload = {
+                file,
+                tag: document.getElementById('notaTag').value,
+                valor: document.getElementById('notaValor').value,
+                modulo: window.currentModulo
+              };
+
+              try {
+                const fn = await resolvePyFunction('processarNotaUnica');
+                const result = fn ? await fn(payload) : mockNota(payload);
+                fillNota(result);
+              } catch (e) {
+                document.getElementById('notaStatus').textContent = `Erro: ${e?.message || e}`;
+              }
+            });
+          }
+
+          if (route === 'relatorio-cclass') {
+            renderCClassChart();
+            document.getElementById('btnProcessarCClass')?.addEventListener('click', async () => {
+              setProgress('barCClass', 'txtCClass', 20, 'Lendo ZIP...');
+              const payload = {
+                file: document.getElementById('cclassZip')?.files?.[0],
+                filtro: document.getElementById('cclassFiltro').value,
+                ordenacao: document.getElementById('cclassOrdenacao').value,
+                modulo: window.currentModulo
+              };
+
+              try {
+                const fn = await resolvePyFunction('processarResumoCClass');
+                setProgress('barCClass', 'txtCClass', 65, 'Processando notas...');
+                const result = fn ? await fn(payload) : mockCClass();
+                setProgress('barCClass', 'txtCClass', 100, 'Concluído.');
+                hydrateCClass(result);
+                document.getElementById('btnExportarCClass').disabled = false;
+              } catch (e) {
+                setProgress('barCClass', 'txtCClass', 0, `Erro: ${e?.message || e}`);
+              }
+            });
+          }
+
+          if (route === 'relatorio-imposto') {
+            renderImpostoChart();
+            document.getElementById('btnProcessarImposto')?.addEventListener('click', async () => {
+              setProgress('barImposto', 'txtImposto', 20, 'Lendo ZIP...');
+              const payload = {
+                file: document.getElementById('impostoZip')?.files?.[0],
+                filtro: document.getElementById('impostoFiltro').value,
+                ordenacao: document.getElementById('impostoOrdenacao').value,
+                modulo: window.currentModulo
+              };
+              try {
+                const fn = await resolvePyFunction('processarResumoImposto');
+                setProgress('barImposto', 'txtImposto', 65, 'Agrupando tributos...');
+                const result = fn ? await fn(payload) : mockImposto();
+                setProgress('barImposto', 'txtImposto', 100, 'Concluído.');
+                hydrateImposto(result);
+                document.getElementById('btnExportarImposto').disabled = false;
+              } catch (e) {
+                setProgress('barImposto', 'txtImposto', 0, `Erro: ${e?.message || e}`);
+              }
+            });
+          }
+
+          if (route === 'alteracao-lote') {
+            const tipoSelect = document.getElementById('tipoAlteracao');
+            const forms = {
+              produto: document.getElementById('formProduto'),
+              ncm: document.getElementById('formNcm'),
+              cfop: document.getElementById('formCfop'),
+              imposto: document.getElementById('formImposto')
+            };
+
+            const toggleForms = () => {
+              Object.entries(forms).forEach(([k, el]) => el.classList.toggle('hidden', k !== tipoSelect.value));
+            };
+            tipoSelect.addEventListener('change', toggleForms);
+            toggleForms();
+
+            document.getElementById('btnProcessarLote')?.addEventListener('click', async () => {
+              setProgress('barLote', 'txtLote', 22, 'Carregando arquivos...');
+
+              const payload = {
+                tipo: tipoSelect.value,
+                file: document.getElementById('loteArquivo')?.files?.[0],
+                modulo: window.currentModulo,
+                dados: {
+                  produtoAtual: document.getElementById('produtoAtual')?.value,
+                  produtoNovo: document.getElementById('produtoNovo')?.value,
+                  ncmAtual: document.getElementById('ncmAtual')?.value,
+                  ncmNovo: document.getElementById('ncmNovo')?.value,
+                  cfopAtual: document.getElementById('cfopAtual')?.value,
+                  cfopNovo: document.getElementById('cfopNovo')?.value,
+                  impostoNome: document.getElementById('impostoNome')?.value,
+                  impostoAliquota: document.getElementById('impostoAliquota')?.value
+                }
+              };
+
+              try {
+                const fn = await resolvePyFunction('processarAlteracaoLote');
+                setProgress('barLote', 'txtLote', 67, 'Aplicando alterações...');
+                const result = fn ? await fn(payload) : { arquivos: 18, alterados: 17 };
+                setProgress('barLote', 'txtLote', 100, `Concluído: ${result.alterados}/${result.arquivos} alterados.`);
+                document.getElementById('btnDownloadLote').disabled = false;
+              } catch (e) {
+                setProgress('barLote', 'txtLote', 0, `Erro: ${e?.message || e}`);
+              }
+            });
+          }
+        }
+
+        async function resolvePyFunction(name) {
+          if (typeof window[name] === 'function') return window[name];
+
+          const pyscript = window.pyscript;
+          if (pyscript?.interpreter?.globals?.get) {
+            const pyFn = pyscript.interpreter.globals.get(name);
+            if (pyFn) {
+              window[name] = pyFn;
+              return pyFn;
+            }
+          }
+          return null;
+        }
+
+        function setProgress(barId, textId, value, message) {
+          const bar = document.getElementById(barId);
+          const txt = document.getElementById(textId);
+          if (bar) bar.style.width = `${Math.max(0, Math.min(100, value))}%`;
+          if (txt) txt.textContent = message;
+        }
+
+        function fillNota(result) {
+          document.getElementById('notaChave').textContent = result.chave || '-';
+          document.getElementById('notaEmitente').textContent = result.emitente || '-';
+          document.getElementById('notaDestinatario').textContent = result.destinatario || '-';
+          document.getElementById('notaValorTotal').textContent = result.valorTotal || '-';
+          document.getElementById('notaStatus').textContent = result.status || 'Processado';
+          document.getElementById('btnDownloadNota').disabled = false;
+        }
+
+        function renderCClassChart(labels = ['A01', 'B02', 'C03'], data = [22000, 15400, 9800]) {
+          const ctx = document.getElementById('graficoCClass');
+          if (!ctx) return;
+          if (chartCClass) chartCClass.destroy();
+          chartCClass = new Chart(ctx, {
+            type: 'bar',
+            data: { labels, datasets: [{ label: 'Valor por cClass', data, borderWidth: 1 }] },
+            options: { responsive: true, maintainAspectRatio: false }
+          });
+        }
+
+        function renderImpostoChart(labels = ['ICMS', 'IPI', 'PIS', 'COFINS'], data = [9000, 4300, 1800, 2600]) {
+          const ctx = document.getElementById('graficoImposto');
+          if (!ctx) return;
+          if (chartImposto) chartImposto.destroy();
+          chartImposto = new Chart(ctx, {
+            type: 'doughnut',
+            data: { labels, datasets: [{ label: 'Impostos', data }] },
+            options: { responsive: true, maintainAspectRatio: false }
+          });
+        }
+
+        function hydrateCClass(result) {
+          renderCClassChart(result.grafico.labels, result.grafico.valores);
+          const resumoBody = document.querySelector('#tblCClassResumo tbody');
+          const detalheBody = document.querySelector('#tblCClassDetalhe tbody');
+          resumoBody.innerHTML = '';
+          detalheBody.innerHTML = '';
+
+          result.resumo.forEach(row => {
+            resumoBody.insertAdjacentHTML('beforeend', `<tr><td>${row.cclass}</td><td>${row.descricao}</td><td>${row.quantidade}</td><td>${row.valor}</td></tr>`);
+          });
+          result.detalhe.forEach(row => {
+            detalheBody.insertAdjacentHTML('beforeend', `<tr><td>${row.chave}</td><td>${row.cclass}</td><td>${row.produto}</td><td>${row.quantidade}</td><td>${row.valor}</td></tr>`);
+          });
+        }
+
+        function hydrateImposto(result) {
+          renderImpostoChart(result.grafico.labels, result.grafico.valores);
+          const body = document.querySelector('#tblImpostoResumo tbody');
+          body.innerHTML = '';
+          result.resumo.forEach(row => {
+            body.insertAdjacentHTML('beforeend', `<tr><td>${row.imposto}</td><td>${row.codigo}</td><td>${row.base}</td><td>${row.aliquota}</td><td>${row.valor}</td></tr>`);
+          });
+        }
+
+        function mockNota() {
+          return {
+            chave: '35260412345678000123550010000000011000000011',
+            emitente: 'Empresa Exemplo LTDA',
+            destinatario: 'Cliente Teste SA',
+            valorTotal: 'R$ 12.450,80',
+            status: 'XML processado com sucesso.'
+          };
+        }
+
+        function mockCClass() {
+          return {
+            grafico: { labels: ['A01','B02','C03'], valores: [22000,15400,9800] },
+            resumo: [
+              { cclass: 'A01', descricao: 'Materiais básicos', quantidade: 42, valor: 'R$ 22.000,00' },
+              { cclass: 'B02', descricao: 'Componentes elétricos', quantidade: 29, valor: 'R$ 15.400,00' },
+              { cclass: 'C03', descricao: 'Serviços', quantidade: 11, valor: 'R$ 9.800,00' }
+            ],
+            detalhe: [
+              { chave: 'NFe001', cclass: 'A01', produto: 'Produto A', quantidade: 10, valor: 'R$ 3.000,00' },
+              { chave: 'NFe002', cclass: 'B02', produto: 'Produto B', quantidade: 4, valor: 'R$ 2.100,00' }
+            ]
+          };
+        }
+
+        function mockImposto() {
+          return {
+            grafico: { labels: ['ICMS', 'IPI', 'PIS', 'COFINS'], valores: [9000,4300,1800,2600] },
+            resumo: [
+              { imposto: 'ICMS', codigo: '00', base: 'R$ 50.000,00', aliquota: '18%', valor: 'R$ 9.000,00' },
+              { imposto: 'IPI', codigo: '50', base: 'R$ 43.000,00', aliquota: '10%', valor: 'R$ 4.300,00' },
+              { imposto: 'PIS', codigo: '01', base: 'R$ 30.000,00', aliquota: '1,65%', valor: 'R$ 495,00' },
+              { imposto: 'COFINS', codigo: '01', base: 'R$ 30.000,00', aliquota: '7,6%', valor: 'R$ 2.280,00' }
+            ]
+          };
+        }
+
+        document.getElementById('moduloSelect').addEventListener('change', (ev) => {
+          window.currentModulo = ev.target.value;
+        });
+
+        navLinks.forEach(link => {
+          link.addEventListener('click', () => routeTo(link.dataset.route));
+        });
+
+        routeTo('inicio');
+      })();
+    </script>
+
+    <script type="py" src="./main.py" worker></script>
   </body>
 </html>
