@@ -8,6 +8,7 @@ import {
   Receipt,
   Edit3,
   FileSpreadsheet,
+  FolderTree,
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -18,6 +19,8 @@ const navLinks = [
   { label: 'Imposto', path: '/resumo-imposto', icon: Receipt },
   { label: 'Alteração Lote', path: '/alteracao-lote', icon: Edit3 },
 ];
+
+
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -69,6 +72,20 @@ export default function Navbar() {
               </button>
             );
           })}
+
+          {(activeModule === 'nfe' || activeModule === 'nfce') && (
+            <button
+              onClick={() => navigate(`/${activeModule}/exportar-xml-por-ie`)}
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
+                location.pathname === `/${activeModule}/exportar-xml-por-ie`
+                  ? 'bg-[#a78bfa]/20 text-[#c4b5fd]'
+                  : 'text-[#94a3b8] hover:bg-[#1e293b] hover:text-[#f1f5f9]'
+              }`}
+            >
+              <FolderTree className="h-4 w-4" />
+              <span className="hidden lg:inline">Exportar XML</span>
+            </button>
+          )}
 
           <div className="ml-3 border-l border-[#334155] pl-3">
             <Select value={activeModule} onValueChange={(v) => setActiveModule(v as any)}>
