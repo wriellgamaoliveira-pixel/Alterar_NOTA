@@ -49,12 +49,12 @@ export default function Home() {
 
     {
       title: 'Exportar XML por IE',
-      description: activeModule === 'nfe' ? 'Reorganiza XMLs de NF-e por Inscrição Estadual do destinatário' : activeModule === 'nfce' ? 'Reorganiza XMLs de NFC-e por Inscrição Estadual do destinatário' : 'Disponível para NF-e e NFC-e',
+      description: 'Separar XMLs por inscrição estadual (IE) e baixar em ZIP organizado',
       icon: FolderTree,
       path: `/${activeModule}/exportar-xml-por-ie`,
       color: '#a78bfa',
       bgColor: '#a78bfa15',
-      disabled: activeModule !== 'nfe' && activeModule !== 'nfce',
+      visible: activeModule === 'nfe' || activeModule === 'nfce',
     },
 
     {
@@ -86,7 +86,7 @@ export default function Home() {
       </div>
 
       <div className="grid gap-5 md:grid-cols-2">
-        {cards.map((card, idx) => (
+        {cards.filter(card => card.visible !== false).map((card, idx) => (
           <button
             key={idx}
             onClick={() => !card.disabled && navigate(card.path)}
