@@ -11,6 +11,8 @@ import {
   Zap,
   Shield,
   BarChart4,
+  FolderTree,
+  LayoutDashboard,
 } from 'lucide-react';
 
 export default function Home() {
@@ -45,6 +47,27 @@ export default function Home() {
       bgColor: '#22c55e15',
       disabled: activeModule !== 'nfe' && activeModule !== 'nfce',
     },
+
+    {
+      title: 'Exportar XML por IE',
+      description: 'Separar XMLs por inscrição estadual (IE) e baixar em ZIP organizado',
+      icon: FolderTree,
+      path: `/${activeModule}/exportar-xml-por-ie`,
+      color: '#a78bfa',
+      bgColor: '#a78bfa15',
+      visible: activeModule === 'nfe' || activeModule === 'nfce',
+    },
+
+
+    {
+      title: 'Dashboard de Apuração',
+      description: 'Análise financeira e tributária a partir de HTML',
+      icon: LayoutDashboard,
+      path: '/apuracao/dashboard',
+      color: '#14b8a6',
+      bgColor: '#14b8a615',
+    },
+
     {
       title: 'Alteração em Lote',
       description: 'Altere XMLs em massa: cClass, CFOP, descrição e mais',
@@ -74,7 +97,7 @@ export default function Home() {
       </div>
 
       <div className="grid gap-5 md:grid-cols-2">
-        {cards.map((card, idx) => (
+        {cards.filter(card => card.visible !== false).map((card, idx) => (
           <button
             key={idx}
             onClick={() => !card.disabled && navigate(card.path)}
