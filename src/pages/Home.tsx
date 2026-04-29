@@ -12,7 +12,6 @@ import {
   Shield,
   BarChart4,
   FolderTree,
-  LayoutDashboard,
 } from 'lucide-react';
 
 export default function Home() {
@@ -56,16 +55,6 @@ export default function Home() {
       color: '#a78bfa',
       bgColor: '#a78bfa15',
       visible: activeModule === 'nfe' || activeModule === 'nfce',
-    },
-
-
-    {
-      title: 'Dashboard de Apuração',
-      description: 'Análise financeira e tributária a partir de HTML',
-      icon: LayoutDashboard,
-      path: '/apuracao/dashboard',
-      color: '#14b8a6',
-      bgColor: '#14b8a615',
     },
 
     {
