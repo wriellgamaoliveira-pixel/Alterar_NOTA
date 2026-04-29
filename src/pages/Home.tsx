@@ -11,6 +11,7 @@ import {
   Zap,
   Shield,
   BarChart4,
+  FolderTree,
 } from 'lucide-react';
 
 export default function Home() {
@@ -45,6 +46,17 @@ export default function Home() {
       bgColor: '#22c55e15',
       disabled: activeModule !== 'nfe' && activeModule !== 'nfce',
     },
+
+    {
+      title: 'Exportar XML por IE',
+      description: activeModule === 'nfe' ? 'Reorganiza XMLs de NF-e por Inscrição Estadual do destinatário' : activeModule === 'nfce' ? 'Reorganiza XMLs de NFC-e por Inscrição Estadual do destinatário' : 'Disponível para NF-e e NFC-e',
+      icon: FolderTree,
+      path: `/${activeModule}/exportar-xml-por-ie`,
+      color: '#a78bfa',
+      bgColor: '#a78bfa15',
+      disabled: activeModule !== 'nfe' && activeModule !== 'nfce',
+    },
+
     {
       title: 'Alteração em Lote',
       description: 'Altere XMLs em massa: cClass, CFOP, descrição e mais',
