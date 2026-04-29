@@ -8,6 +8,7 @@ import ResumoImposto from '@/pages/ResumoImposto';
 import AlteracaoLote from '@/pages/AlteracaoLote';
 import RelatorioCST from '@/pages/RelatorioCST';
 import ExportarXmlPorIE from '@/pages/ExportarXmlPorIE';
+import DashboardApuracao from '@/pages/DashboardApuracao';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
             <Route path="/resumo-imposto" element={<ResumoImposto />} />
             <Route path="/alteracao-lote" element={<AlteracaoLote />} />
             <Route path="/relatorio-cst" element={<RelatorioCST />} />
+            <Route path="/apuracao" element={<DashboardApuracao />} />
             <Route path="/nfe/exportar-xml-por-ie" element={<ExportarXmlPorIE />} />
             <Route path="/nfce/exportar-xml-por-ie" element={<ExportarXmlPorIE />} />
           </Routes>
