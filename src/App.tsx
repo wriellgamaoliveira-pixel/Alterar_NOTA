@@ -9,6 +9,7 @@ import AlteracaoLote from '@/pages/AlteracaoLote';
 import RelatorioCST from '@/pages/RelatorioCST';
 import ExportarXmlPorIE from '@/pages/ExportarXmlPorIE';
 import DashboardApuracao from '@/pages/DashboardApuracao';
+import DashboardApuracaoHTML from './pages/DashboardApuracaoHTML';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
             <Route path="/dashboard-apuracao" element={<DashboardApuracao />} />
             <Route path="/nfe/exportar-xml-por-ie" element={<ExportarXmlPorIE />} />
             <Route path="/nfce/exportar-xml-por-ie" element={<ExportarXmlPorIE />} />
+            <Route path="/dashboard-apuracao-html" element={<DashboardApuracaoHTML />} />
           </Routes>
         </main>
       </div>
