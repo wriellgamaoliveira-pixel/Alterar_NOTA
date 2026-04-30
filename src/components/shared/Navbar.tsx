@@ -18,7 +18,7 @@ const navLinks = [
   { label: 'cClass', path: '/resumo-cclass', icon: BarChart3 },
   { label: 'Imposto', path: '/resumo-imposto', icon: Receipt },
   { label: 'Alteração Lote', path: '/alteracao-lote', icon: Edit3 },
-  { label: 'Apuração', path: '/apuracao/dashboard', icon: BarChart3 },
+  { label: 'Dashboard de Apuração', path: '/dashboard-apuracao', icon: BarChart3 },
 ];
 
 
