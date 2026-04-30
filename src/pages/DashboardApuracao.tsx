@@ -9,7 +9,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
-// Dados de exemplo – você poderá substituir por props ou estado depois
+// Dados de exemplo – você poderá evoluir depois
 const dadosApuracao = [
   {
     codi_emp: 201,
