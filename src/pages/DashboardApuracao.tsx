@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { UploadDropzone } from '@/components/shared/UploadDropzone';
-import { KpiCard } from '@/components/shared/KpiCard';
+import  UploadDropzone from '@/components/shared/UploadDropzone';
+import  KpiCard  from '@/components/shared/KpiCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
