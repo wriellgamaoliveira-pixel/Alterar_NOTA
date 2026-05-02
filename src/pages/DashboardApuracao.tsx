@@ -1,5 +1,3 @@
-// src/pages/DashboardApuracao.tsx — CORRIGIDO
-import React from 'react';                               // ← Adicionado
 import { useState, useMemo, useCallback, useRef, type ReactNode } from 'react';
 import { UploadCloud } from 'lucide-react';
 import {
