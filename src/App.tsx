@@ -28,6 +28,7 @@ function App() {
             <Route path="/nfe/exportar-xml-por-ie" element={<ExportarXmlPorIE />} />
             <Route path="/nfce/exportar-xml-por-ie" element={<ExportarXmlPorIE />} />
             <Route path="/dashboard-apuracao-html" element={<DashboardApuracaoHTML />} />
+            <Route path="/apuracao" element={<DashboardApuracao />} />
           </Routes>
         </main>
       </div>
