@@ -194,3 +194,4 @@ table tbody tr:hover { background: #f5f8fd; }
 }
 .toast.show { opacity: 1; transform: translateX(0); }
 .toast.error { background: #d93025; }
+ 
