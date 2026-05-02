@@ -1,5 +1,4 @@
-// DashboardApuracao.tsx
-import React, { useState, useMemo, useCallback, useRef } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
 import { UploadCloud } from 'lucide-react';
 import {
   Chart as ChartJS,
@@ -184,7 +183,7 @@ const agruparPorEmpresa = (registros: RegistroBruto[]): Record<string, EmpresaDa
 };
 
 // ─── Componente ──────────────────────────────
-const DashboardApuracao: React.FC = () => {
+export default function DashboardApuracao() {
   const [allCompaniesData, setAllCompaniesData] = useState<Record<string, EmpresaData>>({});
   const [currentCode, setCurrentCode] = useState<string>('');
   const [folhaExtra, setFolhaExtra] = useState<Record<string, FolhaRow[]>>({});
@@ -292,17 +291,10 @@ const DashboardApuracao: React.FC = () => {
     setError('');
   };
 
-  // ─── Dados derivados ────────────────────────
-  const faturamentoPorMes = useMemo(() => {
-    return registros.map(r => r.saidas + r.servicos + r.outros);
-  }, [registros]);
+  const faturamentoPorMes = useMemo(() => registros.map(r => r.saidas + r.servicos + r.outros), [registros]);
   const fatAcumulado = useMemo(() => faturamentoPorMes.reduce((a, b) => a + b, 0), [faturamentoPorMes]);
-  const totalTributos = useMemo(
-    () => registros.reduce((s, r) => s + r.pis + r.cofins + r.icms + r.irpj + r.csll, 0),
-    [registros]
-  );
+  const totalTributos = useMemo(() => registros.reduce((s, r) => s + r.pis + r.cofins + r.icms + r.irpj + r.csll, 0), [registros]);
   const aliqEfetivaGeral = fatAcumulado ? (totalTributos / fatAcumulado) * 100 : 0;
-
   const totalSVA = useMemo(() => registros.reduce((s, r) => s + r.sva, 0), [registros]);
   const totalLivros = useMemo(() => registros.reduce((s, r) => s + r.livros, 0), [registros]);
   const totalSCM = useMemo(() => registros.reduce((s, r) => s + r.scm, 0), [registros]);
@@ -314,31 +306,26 @@ const DashboardApuracao: React.FC = () => {
   }, [currentCode, folhaExtra]);
 
   const totalProventosFolha = folhaAtual.reduce((s, f) => s + f.proventos, 0);
-  const mediaFuncFolha =
-    folhaAtual.length > 0
-      ? Math.round(folhaAtual.reduce((s, f) => s + f.numFunc, 0) / folhaAtual.length)
-      : 0;
+  const mediaFuncFolha = folhaAtual.length > 0
+    ? Math.round(folhaAtual.reduce((s, f) => s + f.numFunc, 0) / folhaAtual.length)
+    : 0;
 
-  // ─── Helpers para as tabelas ────────────────
   const variacao = (atual: number, anterior: number) => ({
     abs: anterior !== 0 ? atual - anterior : 0,
     perc: anterior !== 0 ? ((atual - anterior) / anterior) * 100 : 0,
   });
 
-  // ─── Gráficos ───────────────────────────────
   const doughnutData = useMemo(() => {
     const labels = ['SVA', 'Livros', 'SCM', 'Serviços'];
     const data = [totalSVA, totalLivros, totalSCM, totalServicos];
     return {
       labels,
-      datasets: [
-        {
-          data,
-          backgroundColor: ['#4285f4', '#34a853', '#fbbc04', '#ea4335'],
-          borderColor: '#fff',
-          borderWidth: 3,
-        },
-      ],
+      datasets: [{
+        data,
+        backgroundColor: ['#4285f4', '#34a853', '#fbbc04', '#ea4335'],
+        borderColor: '#fff',
+        borderWidth: 3,
+      }],
     };
   }, [totalSVA, totalLivros, totalSCM, totalServicos]);
 
@@ -346,16 +333,14 @@ const DashboardApuracao: React.FC = () => {
     const labels = registros.map(r => formatCompetencia(r.competencia));
     return {
       labels,
-      datasets: [
-        {
-          label: 'Faturamento (R$)',
-          data: faturamentoPorMes,
-          backgroundColor: 'rgba(26,115,232,0.75)',
-          borderColor: '#1a73e8',
-          borderWidth: 2,
-          borderRadius: 8,
-        },
-      ],
+      datasets: [{
+        label: 'Faturamento (R$)',
+        data: faturamentoPorMes,
+        backgroundColor: 'rgba(26,115,232,0.75)',
+        borderColor: '#1a73e8',
+        borderWidth: 2,
+        borderRadius: 8,
+      }],
     };
   }, [registros, faturamentoPorMes]);
 
@@ -367,14 +352,12 @@ const DashboardApuracao: React.FC = () => {
     const totalCSLL = registros.reduce((s, r) => s + r.csll, 0);
     return {
       labels: ['PIS', 'COFINS', 'ICMS', 'IRPJ', 'CSLL'],
-      datasets: [
-        {
-          label: 'Total Acumulado (R$)',
-          data: [totalPIS, totalCOFINS, totalICMS, totalIRPJ, totalCSLL],
-          backgroundColor: ['#ff9800', '#f44336', '#9c27b0', '#2196f3', '#4caf50'],
-          borderRadius: 8,
-        },
-      ],
+      datasets: [{
+        label: 'Total Acumulado (R$)',
+        data: [totalPIS, totalCOFINS, totalICMS, totalIRPJ, totalCSLL],
+        backgroundColor: ['#ff9800', '#f44336', '#9c27b0', '#2196f3', '#4caf50'],
+        borderRadius: 8,
+      }],
     };
   }, [registros]);
 
@@ -382,24 +365,21 @@ const DashboardApuracao: React.FC = () => {
     const tribMensal = registros.map(r => r.pis + r.cofins + r.icms + r.irpj + r.csll);
     return {
       labels: registros.map(r => formatCompetencia(r.competencia)),
-      datasets: [
-        {
-          label: 'Total de Tributos (R$)',
-          data: tribMensal,
-          borderColor: '#d93025',
-          backgroundColor: 'rgba(217,48,37,0.1)',
-          borderWidth: 3,
-          tension: 0.4,
-          fill: true,
-          pointRadius: 6,
-          pointHoverRadius: 9,
-          pointBackgroundColor: '#d93025',
-        },
-      ],
+      datasets: [{
+        label: 'Total de Tributos (R$)',
+        data: tribMensal,
+        borderColor: '#d93025',
+        backgroundColor: 'rgba(217,48,37,0.1)',
+        borderWidth: 3,
+        tension: 0.4,
+        fill: true,
+        pointRadius: 6,
+        pointHoverRadius: 9,
+        pointBackgroundColor: '#d93025',
+      }],
     };
   }, [registros]);
 
-  // ─── Adicionar linha de folha ───────────────
   const addFolhaRow = () => {
     if (!currentCode) {
       setError('Selecione uma empresa primeiro.');
@@ -417,20 +397,15 @@ const DashboardApuracao: React.FC = () => {
       const updated = { ...prev };
       const list = [...(updated[currentCode] || [])];
       const idx = list.findIndex(f => f.competencia === comp);
-      if (idx >= 0) {
-        list[idx] = { competencia: comp, proventos, numFunc };
-      } else {
-        list.push({ competencia: comp, proventos, numFunc });
-      }
+      if (idx >= 0) list[idx] = { competencia: comp, proventos, numFunc };
+      else list.push({ competencia: comp, proventos, numFunc });
       updated[currentCode] = list;
       return updated;
     });
   };
 
-  // ─── Render ─────────────────────────────────
   return (
     <div className="dashboard-container">
-      {/* Header */}
       <header className="app-header">
         <div className="logo-area">
           <div className="logo-icon">📊</div>
@@ -448,15 +423,11 @@ const DashboardApuracao: React.FC = () => {
             accept=".htm,.html,.txt"
             ref={fileInputRef}
             style={{ display: 'none' }}
-            onChange={e => {
-              const file = e.target.files?.[0];
-              if (file) handleFile(file);
-            }}
+            onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
           />
         </div>
       </header>
 
-      {/* Upload zone */}
       <div
         className="upload-zone"
         onClick={() => fileInputRef.current?.click()}
@@ -478,18 +449,11 @@ const DashboardApuracao: React.FC = () => {
 
       {empresas.length > 0 && (
         <div className="main-container">
-          {/* Company selector */}
           <div className="company-selector-bar">
             <label htmlFor="companySelect">🏢 Empresa:</label>
-            <select
-              id="companySelect"
-              value={currentCode}
-              onChange={e => setCurrentCode(e.target.value)}
-            >
+            <select id="companySelect" value={currentCode} onChange={e => setCurrentCode(e.target.value)}>
               {Object.entries(allCompaniesData).map(([cod, data]) => (
-                <option key={cod} value={cod}>
-                  {data.info.nome_emp} (Cód. {cod})
-                </option>
+                <option key={cod} value={cod}>{data.info.nome_emp} (Cód. {cod})</option>
               ))}
             </select>
             <span className="badge-info">Regime: {info?.regime ?? 'N/D'}</span>
@@ -500,7 +464,6 @@ const DashboardApuracao: React.FC = () => {
             </span>
           </div>
 
-          {/* Indicator cards */}
           <div className="cards-row">
             <div className="indicator-card">
               <span className="card-label">🎫 Ticket Médio</span>
@@ -534,7 +497,6 @@ const DashboardApuracao: React.FC = () => {
             </div>
           </div>
 
-          {/* Tabs */}
           <div className="tabs-nav">
             <button className={`tab-btn ${activeTab === 'receitas' ? 'active' : ''}`} onClick={() => setActiveTab('receitas')}>📋 Tabela 1: Receitas</button>
             <button className={`tab-btn ${activeTab === 'tributos' ? 'active' : ''}`} onClick={() => setActiveTab('tributos')}>🏛️ Tabela 2: Tributos</button>
@@ -542,7 +504,6 @@ const DashboardApuracao: React.FC = () => {
             <button className={`tab-btn ${activeTab === 'trimestres' ? 'active' : ''}`} onClick={() => setActiveTab('trimestres')}>📅 Totais Trimestrais</button>
           </div>
 
-          {/* Conteúdo das tabs */}
           {activeTab === 'receitas' && (
             <div className="table-wrapper">
               <table>
@@ -676,9 +637,7 @@ const DashboardApuracao: React.FC = () => {
                 <tbody>
                   {folhaAtual.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="text-center text-muted">
-                        Nenhum dado de folha. Use o botão abaixo.
-                      </td>
+                      <td colSpan={5} className="text-center text-muted">Nenhum dado de folha. Use o botão abaixo.</td>
                     </tr>
                   ) : (
                     folhaAtual.map((f, i) => {
@@ -710,9 +669,7 @@ const DashboardApuracao: React.FC = () => {
                   )}
                 </tbody>
               </table>
-              <button className="btn btn-sm btn-outline" style={{ marginTop: 8 }} onClick={addFolhaRow}>
-                ➕ Adicionar Linha de Folha
-              </button>
+              <button className="btn btn-sm btn-outline" style={{ marginTop: 8 }} onClick={addFolhaRow}>➕ Adicionar Linha de Folha</button>
               <p className="text-muted text-small">Dados temporários, não salvos.</p>
             </div>
           )}
@@ -793,7 +750,6 @@ const DashboardApuracao: React.FC = () => {
             </div>
           )}
 
-          {/* Charts */}
           <div className="charts-grid">
             <div className="chart-card">
               <h3>📊 Composição do Faturamento</h3>
@@ -816,6 +772,4 @@ const DashboardApuracao: React.FC = () => {
       )}
     </div>
   );
-};
-
-export default DashboardApuracao;
+}
