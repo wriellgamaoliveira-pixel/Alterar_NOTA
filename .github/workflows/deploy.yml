@@ -1,40 +1,28 @@
-name: Deploy Codex to GitHub Pages
+name: Deploy
 
 on:
   push:
-    branches: [codex/create-dashboard-for-financial-data]
+    branches:
+      - main
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          ref: codex/create-dashboard-for-financial-data
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      # Limpa cache de node_modules e lock antigos (resolve o erro do tsc)
-      - run: rm -rf node_modules package-lock.json
-
-      # Instala as dependências corretamente
-      - run: npm install --legacy-peer-deps
-
-      - run: npm run build
-
-      - name: Deploy build to branch root
-        run: |
-          cp -r dist/* .
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git add .
-          git commit -m "Deploy build" || echo "No changes to commit"
-          git push
- 
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
