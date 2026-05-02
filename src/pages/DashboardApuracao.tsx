@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { UploadCloud } from 'lucide-react';
 import {
   Chart as ChartJS,
