@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useRef } from 'react';
+import { useState, useMemo, useCallback, useRef, type ReactNode } from 'react';
 import { UploadCloud } from 'lucide-react';
 import {
   Chart as ChartJS,
@@ -694,7 +694,7 @@ export default function DashboardApuracao() {
                 <tbody>
                   {(() => {
                     const trimestres = ['1º Trimestre', '2º Trimestre', '3º Trimestre', '4º Trimestre'];
-                    const rows: JSX.Element[] = [];
+                    const rows: ReactNode[] = [];
                     let grandFat = 0, grandSVA = 0, grandLiv = 0, grandSCM = 0, grandServ = 0, grandTrib = 0, grandProv = 0, sumFunc = 0, trimCount = 0;
                     trimestres.forEach(tri => {
                       const regsTri = registros.filter(r => getTrimestre(r.competencia) === tri);
