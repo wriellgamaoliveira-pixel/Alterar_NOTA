@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard Apuração</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{margin:0;font-family:Arial;background:#f4f6f9}
+h1{padding:20px;background:#0f172a;color:#fff}
+.container{padding:20px}
+</style>
+</head>
+
+<body>
+
+<h1>Dashboard de Apuração</h1>
+
+<div class="container">
+<button onclick="loadDemo()">Carregar Demo</button>
+
+<div id="resultado"></div>
+</div>
+
+<script>
+function loadDemo(){
+document.getElementById("resultado").innerHTML = `
+<h2>Dados carregados com sucesso</h2>
+<p>Seu HTML está funcionando dentro do sistema.</p>
+`
+}
+</script>
+
+</body>
+</html>
