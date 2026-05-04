@@ -4,12 +4,10 @@ import { twMerge } from "tailwind-merge"
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
-// Adicione estas funções ao arquivo utils.ts existente
 
 export function parseCurrency(value: string | number): number {
   if (typeof value === 'number') return value;
   if (!value) return 0;
-  // Remove pontos de milhar e substitui vírgula por ponto
   const cleaned = String(value).replace(/\./g, '').replace(',', '.');
   return parseFloat(cleaned) || 0;
 }
