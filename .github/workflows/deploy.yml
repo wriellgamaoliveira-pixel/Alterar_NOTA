@@ -1,28 +1,36 @@
-name: Deploy
+name: Deploy to GitHub Pages
 
 on:
   push:
     branches:
-      - main
+      - codex/create-dashboard-for-financial-data   # ⬅️ sua branch principal
 
 permissions:
   contents: write
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install
+      - name: Install dependencies
         run: npm install
 
       - name: Build
         run: npm run build
 
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
+      - name: Move build to docs folder
+        run: |
+          rm -rf docs
+          mv dist docs
+          # Isso cria a pasta docs com os arquivos do build
+
+      - name: Commit and push docs to the same branch
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add docs -f
+          git commit -m "Deploy docs folder for GitHub Pages" || echo "No changes to commit"
+          git push
