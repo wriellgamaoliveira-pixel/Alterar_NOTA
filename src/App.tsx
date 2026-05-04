@@ -1,37 +1,25 @@
-import { Routes, Route } from 'react-router-dom';
-import { ModuleProvider } from '@/context/ModuleContext';
-import Navbar from '@/components/shared/Navbar';
-import Home from '@/pages/Home';
-import NotaUnica from '@/pages/NotaUnica';
-import ResumoCClass from '@/pages/ResumoCClass';
-import ResumoImposto from '@/pages/ResumoImposto';
-import AlteracaoLote from '@/pages/AlteracaoLote';
-import RelatorioCST from '@/pages/RelatorioCST';
-import ExportarXmlPorIE from '@/pages/ExportarXmlPorIE';
-import DashboardApuracao from '@/pages/DashboardApuracao';
+import { Routes, Route } from "react-router-dom"
 
-function App() {
+import Home from "@/pages/Home"
+import DashboardApuracao from "@/pages/DashboardApuracao"
+import NotaUnica from "@/pages/NotaUnica"
+import AlteracaoLote from "@/pages/AlteracaoLote"
+import ResumoCClass from "@/pages/ResumoCClass"
+import ResumoImposto from "@/pages/ResumoImposto"
+import RelatorioCST from "@/pages/RelatorioCST"
+import ExportarXmlPorIE from "@/pages/ExportarXmlPorIE"
+
+export default function App() {
   return (
-    <ModuleProvider>
-      <div className="min-h-screen bg-[#0f172a]">
-        <Navbar />
-        <main>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/nota-unica" element={<NotaUnica />} />
-            <Route path="/resumo-cclass" element={<ResumoCClass />} />
-            <Route path="/resumo-imposto" element={<ResumoImposto />} />
-            <Route path="/alteracao-lote" element={<AlteracaoLote />} />
-            <Route path="/relatorio-cst" element={<RelatorioCST />} />
-            <Route path="/apuracao" element={<DashboardApuracao />} />
-            <Route path="/nfe/exportar-xml-por-ie" element={<ExportarXmlPorIE />} />
-            <Route path="/nfce/exportar-xml-por-ie" element={<ExportarXmlPorIE />} />
-          </Routes>
-        </main>
-      </div>
-    </ModuleProvider>
-  );
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/dashboard-apuracao" element={<DashboardApuracao />} />
+      <Route path="/nota-unica" element={<NotaUnica />} />
+      <Route path="/alteracao-lote" element={<AlteracaoLote />} />
+      <Route path="/cclass" element={<ResumoCClass />} />
+      <Route path="/imposto" element={<ResumoImposto />} />
+      <Route path="/relatorio-cst" element={<RelatorioCST />} />
+      <Route path="/exportar-xml" element={<ExportarXmlPorIE />} />
+    </Routes>
+  )
 }
-
-export default App;
- 
