@@ -1,132 +1,119 @@
-// src/parsers/apuracaoHtmlParser.ts
+export interface RegistroApuracao {
+  competencia: string;
+  saidas: string;
+  servicos: string;
+  outros: string;
+  pis: string;
+  cofins: string;
+  icms: string;
+  sva: string;
+  livros: string;
+  scm: string;
+  irpj: string;
+  csll: string;
+  difal: string;
+}
 
-export interface ApuracaoRegistro {
+export interface InfoEmpresa {
   codi_emp: string;
   nome_emp: string;
-  competencia: string; // formato "MM/AAAA"
-  saidas: number;
-  servicos: number;
-  outros: number;
-  pis: number;
-  cofins: number;
-  icms: number;
-  sva: number;
-  livros: number;
-  scm: number;
-  irpj: number;
-  csll: number;
-  difal: number;
+  regime?: string;
+  estado?: string;
+  sistema?: string;
+  ticketMedio?: number;
+  totalClientes?: number;
+  liquidez?: number;
 }
 
-export interface DadosEmpresa {
-  info: {
-    codi_emp: string;
-    nome_emp: string;
-    regime?: string;
-    estado?: string;
-    sistema?: string;
-    ticketMedio?: number;
-    totalClientes?: number;
-    liquidez?: number;
-  };
-  registros: ApuracaoRegistro[];
+export interface AgrupamentoEmpresa {
+  info: InfoEmpresa;
+  registros: RegistroApuracao[];
 }
 
-export function parseAPURACAOhtm(htmlString: string): ApuracaoRegistro[] {
+export function parseApuracaoHtml(html: string): Record<string, AgrupamentoEmpresa> {
   const parser = new DOMParser();
-  const doc = parser.parseFromString(htmlString, 'text/html');
+  const doc = parser.parseFromString(html, 'text/html');
   const tables = doc.querySelectorAll('table');
-
+  
+  if (tables.length === 0) throw new Error('Nenhuma tabela encontrada');
+  
+  // Localizar tabela com cabeçalhos
   let targetTable: HTMLTableElement | null = null;
-  for (const t of tables) {
-    if (t.querySelectorAll('th').length >= 5) {
-      targetTable = t as HTMLTableElement;
+  for (const table of tables) {
+    if (table.querySelectorAll('th').length >= 5) {
+      targetTable = table;
       break;
     }
   }
-  if (!targetTable && tables.length > 0) {
-    targetTable = tables[0] as HTMLTableElement;
-  }
-  if (!targetTable) {
-    throw new Error('Nenhuma tabela com dados encontrada no arquivo HTM.');
-  }
-
-  const headerRow = targetTable.querySelector('tr:has(th)');
-  if (!headerRow) throw new Error('Cabeçalho da tabela não encontrado.');
-
-  const ths = headerRow.querySelectorAll('th');
-  const colMap: Record<string, number> = {};
-
-  ths.forEach((th, i) => {
-    let key = th.textContent?.trim().toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9_]/g, '_')
-      .replace(/_+/g, '_')
-      .replace(/^_|_$/g, '') || '';
-
-    if (key === 'codi_emp' || key === 'cod_emp' || key === 'codigo') key = 'codi_emp';
-    if (key === 'nome_emp' || key === 'nome' || key === 'empresa') key = 'nome_emp';
-    if (key === 'saidas' || key === 'saidas_') key = 'saidas';
-    if (key === 'competencia' || key === 'mes' || key === 'comp') key = 'competencia';
-
-    colMap[key] = i;
+  if (!targetTable) targetTable = tables[0] as HTMLTableElement;
+  
+  // Mapear colunas
+  const headerRow = targetTable.querySelector('tr');
+  const headers = headerRow ? Array.from(headerRow.querySelectorAll('th, td')).map(h => h.textContent?.trim().toLowerCase() || '') : [];
+  
+  const colIndex: Record<string, number> = {};
+  headers.forEach((h, i) => {
+    const key = h.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_');
+    if (key.includes('codi_emp') || key.includes('cod_emp') || key.includes('codigo')) colIndex['codi_emp'] = i;
+    if (key.includes('nome_emp') || key.includes('nome')) colIndex['nome_emp'] = i;
+    if (key.includes('saidas')) colIndex['saidas'] = i;
+    if (key.includes('servicos')) colIndex['servicos'] = i;
+    if (key.includes('outros')) colIndex['outros'] = i;
+    if (key.includes('pis')) colIndex['pis'] = i;
+    if (key.includes('cofins')) colIndex['cofins'] = i;
+    if (key.includes('icms')) colIndex['icms'] = i;
+    if (key.includes('sva')) colIndex['sva'] = i;
+    if (key.includes('livros')) colIndex['livros'] = i;
+    if (key.includes('scm')) colIndex['scm'] = i;
+    if (key.includes('irpj')) colIndex['irpj'] = i;
+    if (key.includes('csll')) colIndex['csll'] = i;
+    if (key.includes('difal')) colIndex['difal'] = i;
+    if (key.includes('competencia') || key.includes('comp')) colIndex['competencia'] = i;
   });
-
-  const dataRows = targetTable.querySelectorAll('tr:has(td)');
-  const registros: ApuracaoRegistro[] = [];
-
-  dataRows.forEach(row => {
-    const tds = row.querySelectorAll('td');
-    if (tds.length < 5) return;
-
-    const obj: Record<string, string> = {};
-    for (const [key, idx] of Object.entries(colMap)) {
-      if (idx < tds.length) {
-        obj[key] = tds[idx].textContent?.trim() || '';
-      }
-    }
-
-    if (!obj.codi_emp || !obj.competencia) return;
-
-    const parseNum = (val: string) => {
-      const cleaned = val.replace(/\./g, '').replace(',', '.');
-      const n = parseFloat(cleaned);
-      return isNaN(n) ? 0 : n;
+  
+  const rows = targetTable.querySelectorAll('tr');
+  const registros: any[] = [];
+  
+  for (let i = 1; i < rows.length; i++) {
+    const cells = rows[i].querySelectorAll('td');
+    if (cells.length < 5) continue;
+    
+    const getCell = (key: string) => {
+      return colIndex[key] !== undefined ? cells[colIndex[key]]?.textContent?.trim() || '' : '';
     };
-
+    
+    const codi = getCell('codi_emp');
+    const comp = getCell('competencia');
+    if (!codi || !comp) continue;
+    
     registros.push({
-      codi_emp: obj.codi_emp,
-      nome_emp: obj.nome_emp || `Empresa ${obj.codi_emp}`,
-      competencia: obj.competencia,
-      saidas: parseNum(obj.saidas || '0'),
-      servicos: parseNum(obj.servicos || '0'),
-      outros: parseNum(obj.outros || '0'),
-      pis: parseNum(obj.pis || '0'),
-      cofins: parseNum(obj.cofins || '0'),
-      icms: parseNum(obj.icms || '0'),
-      sva: parseNum(obj.sva || '0'),
-      livros: parseNum(obj.livros || '0'),
-      scm: parseNum(obj.scm || '0'),
-      irpj: parseNum(obj.irpj || '0'),
-      csll: parseNum(obj.csll || '0'),
-      difal: parseNum(obj.difal || '0'),
+      codi_emp: codi,
+      nome_emp: getCell('nome_emp') || `Empresa ${codi}`,
+      competencia: comp,
+      saidas: getCell('saidas') || '0,00',
+      servicos: getCell('servicos') || '0,00',
+      outros: getCell('outros') || '0,00',
+      pis: getCell('pis') || '0,00',
+      cofins: getCell('cofins') || '0,00',
+      icms: getCell('icms') || '0,00',
+      sva: getCell('sva') || '0,00',
+      livros: getCell('livros') || '0,00',
+      scm: getCell('scm') || '0,00',
+      irpj: getCell('irpj') || '0,00',
+      csll: getCell('csll') || '0,00',
+      difal: getCell('difal') || '0,00',
     });
-  });
-
-  if (registros.length === 0) {
-    throw new Error('Nenhum registro de dados válido encontrado.');
   }
-  return registros;
-}
-
-export function agruparPorEmpresa(registros: ApuracaoRegistro[]): Record<string, DadosEmpresa> {
-  const grouped: Record<string, DadosEmpresa> = {};
+  
+  if (registros.length === 0) throw new Error('Nenhum registro encontrado na tabela');
+  
+  // Agrupar por empresa
+  const agrupado: Record<string, AgrupamentoEmpresa> = {};
   registros.forEach(r => {
-    const cod = r.codi_emp;
-    if (!grouped[cod]) {
-      grouped[cod] = {
+    if (!agrupado[r.codi_emp]) {
+      agrupado[r.codi_emp] = {
         info: {
-          codi_emp: cod,
+          codi_emp: r.codi_emp,
           nome_emp: r.nome_emp,
           regime: 'N/D',
           estado: 'N/D',
@@ -135,15 +122,22 @@ export function agruparPorEmpresa(registros: ApuracaoRegistro[]): Record<string,
         registros: [],
       };
     }
-    grouped[cod].registros.push(r);
-  });
-
-  for (const cod in grouped) {
-    grouped[cod].registros.sort((a, b) => {
-      const [ma, aa] = a.competencia.split('/').map(Number);
-      const [mb, ab] = b.competencia.split('/').map(Number);
-      return aa !== ab ? aa - ab : ma - mb;
+    agrupado[r.codi_emp].registros.push({
+      competencia: r.competencia,
+      saidas: r.saidas,
+      servicos: r.servicos,
+      outros: r.outros,
+      pis: r.pis,
+      cofins: r.cofins,
+      icms: r.icms,
+      sva: r.sva,
+      livros: r.livros,
+      scm: r.scm,
+      irpj: r.irpj,
+      csll: r.csll,
+      difal: r.difal,
     });
-  }
-  return grouped;
+  });
+  
+  return agrupado;
 }
