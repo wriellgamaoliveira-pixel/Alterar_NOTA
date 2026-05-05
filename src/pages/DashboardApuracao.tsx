@@ -5,7 +5,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   BarChart,
   Bar,
@@ -47,18 +46,11 @@ import {
   FileText,
 } from 'lucide-react';
 
-interface FolhaPagamento {
-  competencia: string;
-  proventos: number;
-  numFunc: number;
-}
-
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
 
 const DashboardApuracao: React.FC = () => {
   const [empresas, setEmpresas] = useState<Record<string, AgrupamentoEmpresa>>({});
   const [empresaSelecionada, setEmpresaSelecionada] = useState<string>('');
-  const [folhaExtra, setFolhaExtra] = useState<Record<string, FolhaPagamento[]>>({});
   const [loading, setLoading] = useState(false);
   const [fileName, setFileName] = useState<string>('');
   const [activeTab, setActiveTab] = useState('receitas');
@@ -72,11 +64,6 @@ const DashboardApuracao: React.FC = () => {
       const codigos = Object.keys(dados);
       if (codigos.length > 0) {
         setEmpresaSelecionada(codigos[0]);
-        const novaFolha: Record<string, FolhaPagamento[]> = {};
-        codigos.forEach(cod => {
-          novaFolha[cod] = [];
-        });
-        setFolhaExtra(novaFolha);
       }
       setFileName(file.name);
     } catch (error) {
@@ -173,39 +160,15 @@ const DashboardApuracao: React.FC = () => {
     }));
   }, [registrosOrdenados]);
 
-  const handleAddFolha = () => {
-    if (!empresaSelecionada) return;
-    const comp = prompt('Competência (MM/AAAA):');
-    if (!comp) return;
-    const prov = prompt('Total de Proventos (R$):');
-    if (!prov) return;
-    const func = prompt('Nº de Funcionários:');
-    if (!func) return;
-
-    setFolhaExtra(prev => {
-      const atual = [...(prev[empresaSelecionada] || [])];
-      const existente = atual.findIndex(f => f.competencia === comp);
-      const novo = {
-        competencia: comp,
-        proventos: parseCurrency(prov),
-        numFunc: parseInt(func) || 0,
-      };
-      if (existente >= 0) {
-        atual[existente] = novo;
-      } else {
-        atual.push(novo);
-      }
-      return { ...prev, [empresaSelecionada]: atual };
-    });
-  };
 
   const folhaAtual = useMemo(() => {
-    return (folhaExtra[empresaSelecionada] || []).sort((a, b) => {
+    if (!empresaAtual) return [];
+    return [...empresaAtual.folha].sort((a, b) => {
       const [ma, aa] = a.competencia.split('/').map(Number);
       const [mb, ab] = b.competencia.split('/').map(Number);
       return aa !== ab ? aa - ab : ma - mb;
     });
-  }, [folhaExtra, empresaSelecionada]);
+  }, [empresaAtual]);
 
   // Estado vazio – tela de upload
   if (Object.keys(empresas).length === 0) {
@@ -621,24 +584,11 @@ const DashboardApuracao: React.FC = () => {
                   <Users className="h-5 w-5 text-green-400" />
                   Folha de Pagamento
                 </CardTitle>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleAddFolha}
-                  className="border-[#334155] bg-transparent text-[#cbd5e1] hover:bg-[#334155]"
-                >
-                  + Adicionar Mês
-                </Button>
               </div>
             </CardHeader>
             <CardContent>
               {folhaAtual.length === 0 ? (
-                <Alert className="border-[#334155] bg-[#0f172a] text-[#94a3b8]">
-                  <AlertDescription>
-                    Nenhum dado de folha de pagamento disponível. Clique em "Adicionar Mês" para inserir
-                    manualmente os dados de proventos e funcionários.
-                  </AlertDescription>
-                </Alert>
+                <p className="text-sm text-[#94a3b8]">Nenhum dado de folha encontrado no arquivo APURACAO.htm.</p>
               ) : (
                 <div className="overflow-x-auto">
                   <Table>
@@ -653,8 +603,9 @@ const DashboardApuracao: React.FC = () => {
                     </TableHeader>
                     <TableBody>
                       {folhaAtual.map((f, i) => {
-                        const prevProventos = i > 0 ? folhaAtual[i - 1].proventos : null;
-                        const varAbs = prevProventos ? f.proventos - prevProventos : 0;
+                        const proventos = parseCurrency(f.proventos);
+                        const prevProventos = i > 0 ? parseCurrency(folhaAtual[i - 1].proventos) : null;
+                        const varAbs = prevProventos ? proventos - prevProventos : 0;
                         const varPerc =
                           prevProventos && prevProventos > 0 ? (varAbs / prevProventos) * 100 : 0;
                         return (
@@ -663,7 +614,7 @@ const DashboardApuracao: React.FC = () => {
                               {formatCompetencia(f.competencia)}
                             </TableCell>
                             <TableCell className="text-right text-[#94a3b8]">
-                              {formatCurrency(f.proventos)}
+                              {formatCurrency(parseCurrency(f.proventos))}
                             </TableCell>
                             <TableCell className="text-right text-[#94a3b8]">{f.numFunc}</TableCell>
                             <TableCell
@@ -686,7 +637,7 @@ const DashboardApuracao: React.FC = () => {
                       <TableRow className="font-bold bg-[#0f172a]">
                         <TableCell className="text-[#f1f5f9]">TOTAL</TableCell>
                         <TableCell className="text-right text-[#f1f5f9]">
-                          {formatCurrency(folhaAtual.reduce((s, f) => s + f.proventos, 0))}
+                          {formatCurrency(folhaAtual.reduce((s, f) => s + parseCurrency(f.proventos), 0))}
                         </TableCell>
                         <TableCell className="text-right text-[#f1f5f9]">
                           {folhaAtual.reduce((s, f) => s + f.numFunc, 0)} (soma)
