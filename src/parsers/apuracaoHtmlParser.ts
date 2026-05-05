@@ -25,9 +25,16 @@ export interface InfoEmpresa {
   liquidez?: number;
 }
 
+export interface RegistroFolha {
+  competencia: string;
+  proventos: string;
+  numFunc: number;
+}
+
 export interface AgrupamentoEmpresa {
   info: InfoEmpresa;
   registros: RegistroApuracao[];
+  folha: RegistroFolha[];
 }
 
 export function parseApuracaoHtml(html: string): Record<string, AgrupamentoEmpresa> {
@@ -68,6 +75,8 @@ export function parseApuracaoHtml(html: string): Record<string, AgrupamentoEmpre
     if (key.includes('irpj')) colIndex['irpj'] = i;
     if (key.includes('csll')) colIndex['csll'] = i;
     if (key.includes('difal')) colIndex['difal'] = i;
+    if (key.includes('proventos')) colIndex['proventos'] = i;
+    if (key.includes('funcionarios') || key.includes('n_func') || key.includes('qtd_func')) colIndex['num_func'] = i;
     if (key.includes('competencia') || key.includes('comp')) colIndex['competencia'] = i;
   });
   
@@ -102,6 +111,8 @@ export function parseApuracaoHtml(html: string): Record<string, AgrupamentoEmpre
       irpj: getCell('irpj') || '0,00',
       csll: getCell('csll') || '0,00',
       difal: getCell('difal') || '0,00',
+      proventos: getCell('proventos') || '0,00',
+      num_func: Number((getCell('num_func') || '0').replace(/\D/g, '')) || 0,
     });
   }
   
@@ -120,6 +131,7 @@ export function parseApuracaoHtml(html: string): Record<string, AgrupamentoEmpre
           sistema: 'N/D',
         },
         registros: [],
+        folha: [],
       };
     }
     agrupado[r.codi_emp].registros.push({
@@ -137,6 +149,14 @@ export function parseApuracaoHtml(html: string): Record<string, AgrupamentoEmpre
       csll: r.csll,
       difal: r.difal,
     });
+
+    if (r.proventos || r.num_func) {
+      agrupado[r.codi_emp].folha.push({
+        competencia: r.competencia,
+        proventos: r.proventos || '0,00',
+        numFunc: r.num_func || 0,
+      });
+    }
   });
   
   return agrupado;
