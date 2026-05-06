@@ -57,6 +57,16 @@ export default function Home() {
       visible: activeModule === 'nfe' || activeModule === 'nfce',
     },
 
+
+    {
+      title: 'Dashboard de Apuração',
+      description: 'Upload de APURACAO.HTM com visão multiempresa, tabelas e gráficos',
+      icon: BarChart3,
+      path: '/dashboard-apuracao',
+      color: '#1a73e8',
+      bgColor: '#1a73e815',
+    },
+
     {
       title: 'Alteração em Lote',
       description: 'Altere XMLs em massa: cClass, CFOP, descrição e mais',
