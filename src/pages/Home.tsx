@@ -58,14 +58,6 @@ export default function Home() {
     },
 
 
-    {
-      title: 'Dashboard de Apuração',
-      description: 'Upload de APURACAO.HTM com visão multiempresa, tabelas e gráficos',
-      icon: BarChart3,
-      path: '/dashboard-apuracao',
-      color: '#1a73e8',
-      bgColor: '#1a73e815',
-    },
 
     {
       title: 'Alteração em Lote',

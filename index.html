@@ -4,21 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Portal Fiscal XML</title>
-    <script type="module" crossorigin src="/Alterar_NOTA/assets/index-BpltvaAK.js"></script>
-    <link rel="stylesheet" crossorigin href="/Alterar_NOTA/assets/index-DTl-bXQa.css" />
   </head>
   <body>
     <div id="root"></div>
-    <noscript>É necessário habilitar JavaScript para carregar o portal.</noscript>
-    <script>
-      window.addEventListener('load', () => {
-        setTimeout(() => {
-          const root = document.getElementById('root');
-          if (!root || root.children.length === 0) {
-            window.location.replace('/Alterar_NOTA/dashboard-apuracao.html');
-          }
-        }, 1500);
-      });
-    </script>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
