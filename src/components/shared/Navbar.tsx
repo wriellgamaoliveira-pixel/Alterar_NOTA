@@ -18,7 +18,7 @@ const navLinks = [
   { label: 'cClass', path: '/resumo-cclass', icon: BarChart3 },
   { label: 'Imposto', path: '/resumo-imposto', icon: Receipt },
   { label: 'Alteração Lote', path: '/alteracao-lote', icon: Edit3 },
-  { label: 'Dashboard de Apuração', path: '/dashboard-apuracao', icon: BarChart3, externalHtml: true },
+  { label: 'Dashboard de Apuração', path: '/dashboard-apuracao', icon: BarChart3 },
 ];
 
 
@@ -30,10 +30,6 @@ export default function Navbar() {
 
   const currentModule = MODULES.find(m => m.id === activeModule);
 
-  const openDashboardHtml = () => {
-    const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
-    window.location.href = `${window.location.origin}${base}/dashboard-apuracao.html`;
-  };
 
   return (
     <nav className="sticky top-0 z-50 border-b border-[#334155] bg-[#0f172a]/80 backdrop-blur-md">
@@ -66,7 +62,7 @@ export default function Navbar() {
             return (
               <button
                 key={link.path}
-                onClick={() => (link as any).externalHtml ? openDashboardHtml() : navigate(link.path)}
+                onClick={() => navigate(link.path)}
                 className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
                   isActive
                     ? 'bg-[#38bdf8]/10 text-[#38bdf8]'
