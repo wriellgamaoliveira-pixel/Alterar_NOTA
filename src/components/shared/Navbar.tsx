@@ -18,7 +18,7 @@ const navLinks = [
   { label: 'cClass', path: '/resumo-cclass', icon: BarChart3 },
   { label: 'Imposto', path: '/resumo-imposto', icon: Receipt },
   { label: 'Alteração Lote', path: '/alteracao-lote', icon: Edit3 },
-  { label: 'Apuração', path: '/apuracao/dashboard', icon: BarChart3 },
+  { label: 'Dashboard de Apuração', path: '/dashboard-apuracao', icon: BarChart3 },
 ];
 
 
@@ -29,6 +29,7 @@ export default function Navbar() {
   const { activeModule, setActiveModule } = useModule();
 
   const currentModule = MODULES.find(m => m.id === activeModule);
+
 
   return (
     <nav className="sticky top-0 z-50 border-b border-[#334155] bg-[#0f172a]/80 backdrop-blur-md">

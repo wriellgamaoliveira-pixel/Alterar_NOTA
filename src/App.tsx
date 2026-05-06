@@ -24,6 +24,7 @@ function App() {
             <Route path="/alteracao-lote" element={<AlteracaoLote />} />
             <Route path="/relatorio-cst" element={<RelatorioCST />} />
             <Route path="/apuracao" element={<DashboardApuracao />} />
+            <Route path="/dashboard-apuracao" element={<DashboardApuracao />} />
             <Route path="/nfe/exportar-xml-por-ie" element={<ExportarXmlPorIE />} />
             <Route path="/nfce/exportar-xml-por-ie" element={<ExportarXmlPorIE />} />
           </Routes>

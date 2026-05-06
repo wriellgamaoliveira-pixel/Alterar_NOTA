@@ -57,6 +57,8 @@ export default function Home() {
       visible: activeModule === 'nfe' || activeModule === 'nfce',
     },
 
+
+
     {
       title: 'Alteração em Lote',
       description: 'Altere XMLs em massa: cClass, CFOP, descrição e mais',
