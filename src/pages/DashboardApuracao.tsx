@@ -1,30 +1,105 @@
 import { useMemo, useState } from 'react';
-import { UploadCloud } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import styles from './DashboardApuracao.module.css';
 import { parseAPURACAOhtm, agruparPorEmpresa, type ApuracaoRegistro } from '@/parsers/apuracaoHtmlParser';
-import { Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-const nf = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
-const pf = (n: number) => `${n.toFixed(2)}%`;
-const normalizeComp = (comp: string) => { const [m, y] = comp.split('/').map(Number); return y * 100 + m; };
-function parseQuarter(comp: string) { const [m, y] = comp.split('/').map(Number); return `${Math.ceil(m / 3)}º tri/${y}`; }
+import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+
+type Tab = 'receitas' | 'tributos' | 'folha' | 'trimestres';
+const cores = ['#4285f4', '#34a853', '#fbbc04', '#ea4335', '#9c27b0'];
+const money = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
+const pct = (v: number) => `${v.toFixed(2)}%`;
+
 export default function DashboardApuracao() {
-  const [allCompaniesData, setAllCompaniesData] = useState<Record<string, { nome: string; registros: ApuracaoRegistro[] }>>({});
-  const [selectedCompany, setSelectedCompany] = useState(''); const [error, setError] = useState('');
-  const onFile = async (file: File) => { try { setError(''); const html = await file.text(); const grouped = agruparPorEmpresa(parseAPURACAOhtm(html)); const payload: Record<string, { nome: string; registros: ApuracaoRegistro[] }> = {}; Object.entries(grouped).forEach(([codi_emp, d]) => { payload[codi_emp] = { nome: d.info.nome_emp, registros: d.registros }; }); setAllCompaniesData(payload); setSelectedCompany(Object.keys(payload)[0] || ''); } catch (e: any) { setError(e.message || 'Falha ao processar arquivo .HTM'); } };
-  const current = selectedCompany ? allCompaniesData[selectedCompany] : undefined;
-  const registros = useMemo(() => (current?.registros || []).slice().sort((a, b) => normalizeComp(a.competencia) - normalizeComp(b.competencia)), [current]);
-  const rowsReceita = registros.map((r, i) => { const faturamento = r.saidas; const servico = Math.max(0, faturamento - (r.sva + r.livros + r.scm)); const prev = registros[i - 1]?.saidas ?? 0; const variacao = prev > 0 ? ((faturamento - prev) / prev) * 100 : 0; return { ...r, faturamento, servico, variacao }; });
-  const rowsTributos = rowsReceita.map((r, i) => { const das = r.pis + r.cofins; const total = das + r.cofins + r.icms + r.irpj + r.csll; const aliq = r.faturamento ? (total / r.faturamento) * 100 : 0; const prevTotal = i > 0 ? (rowsReceita[i - 1].pis + rowsReceita[i - 1].cofins + rowsReceita[i - 1].icms + rowsReceita[i - 1].irpj + rowsReceita[i - 1].csll) : 0; const variacao = prevTotal ? ((total - prevTotal) / prevTotal) * 100 : 0; return { ...r, das, total, aliq, variacao }; });
-  const ticketMedio = rowsReceita.length ? rowsReceita.reduce((a, b) => a + b.faturamento, 0) / rowsReceita.length : 0;
-  const totalClientes = Math.round(ticketMedio / 120);
-  const liquidez = rowsTributos.length ? ((rowsReceita.reduce((a, b) => a + b.faturamento, 0) - rowsTributos.reduce((a, b) => a + b.total, 0)) / Math.max(rowsReceita.reduce((a, b) => a + b.faturamento, 0), 1)) * 100 : 0;
-  const faturamentoAcumulado = rowsReceita.reduce((a, b) => a + b.faturamento, 0);
-  const pieData = useMemo(() => { const t = rowsReceita.reduce((acc, r) => ({ sva: acc.sva + r.sva, livros: acc.livros + r.livros, scm: acc.scm + r.scm, servico: acc.servico + r.servico }), { sva: 0, livros: 0, scm: 0, servico: 0 }); return [{ name: 'SVA', value: t.sva, color: '#1a73e8' }, { name: 'Livros', value: t.livros, color: '#0d904f' }, { name: 'SCM', value: t.scm, color: '#1a6e8e' }, { name: 'Serviços', value: t.servico, color: '#d93025' }]; }, [rowsReceita]);
-  return <div className="min-h-screen bg-[#f0f4f8]"><header className="sticky top-0 z-40 bg-gradient-to-r from-[#1a3c5e] to-[#1a6e8e] text-white shadow"><div className="mx-auto max-w-[1500px] px-6 py-4 flex items-center justify-between"><h1 className="text-2xl font-bold">Dashboard de Apuração</h1></div></header><div className="mx-auto max-w-[1500px] p-6 space-y-6"><label className="block border-2 border-dashed border-[#1a73e8] rounded-xl p-10 text-center cursor-pointer bg-white"><UploadCloud className="mx-auto h-8 w-8 text-[#1a73e8]" /><p className="mt-2 font-medium">Arraste o arquivo .HTM aqui ou clique para enviar</p><input type="file" className="hidden" accept=".htm,.html" onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])} /></label>{error && <p className="text-[#d93025] font-medium">{error}</p>}
-    {Object.keys(allCompaniesData).length > 0 && <Card><CardHeader><CardTitle>Empresa</CardTitle></CardHeader><CardContent><Select value={selectedCompany} onValueChange={setSelectedCompany}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(allCompaniesData).map(([cod, data]) => <SelectItem key={cod} value={cod}>{cod} - {data.nome}</SelectItem>)}</SelectContent></Select></CardContent></Card>}
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">{[['Ticket Médio', nf.format(ticketMedio), '#1a73e8'], ['Total Clientes', totalClientes.toString(), '#0d904f'], ['Liquidez', pf(liquidez), '#1a6e8e'], ['Faturamento Acumulado', nf.format(faturamentoAcumulado), '#d93025']].map(([t, v, c]) => <Card key={t} className="border-l-4" style={{ borderLeftColor: c as string }}><CardContent className="p-4"><p className="text-sm text-slate-500">{t}</p><p className="text-xl font-bold">{v}</p></CardContent></Card>)}</div>
-    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6"><Card><CardHeader><CardTitle>Composição de Receita</CardTitle></CardHeader><CardContent className="h-[320px]"><ResponsiveContainer><PieChart><Pie data={pieData} dataKey="value" nameKey="name" outerRadius={100}>{pieData.map((d) => <Cell key={d.name} fill={d.color} />)}</Pie><Tooltip /><Legend /></PieChart></ResponsiveContainer></CardContent></Card><Card><CardHeader><CardTitle>Faturamento Mensal</CardTitle></CardHeader><CardContent className="h-[320px]"><ResponsiveContainer><BarChart data={rowsReceita}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="competencia" /><YAxis /><Tooltip /><Bar dataKey="faturamento" fill="#1a73e8" /></BarChart></ResponsiveContainer></CardContent></Card><Card><CardHeader><CardTitle>Evolução Tributária</CardTitle></CardHeader><CardContent className="h-[320px]"><ResponsiveContainer><LineChart data={rowsTributos}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="competencia" /><YAxis /><Tooltip /><Line dataKey="total" stroke="#0d904f" /></LineChart></ResponsiveContainer></CardContent></Card></div>
-    <div className="overflow-x-auto bg-white rounded-xl p-4"><h3 className="font-semibold mb-2">Receitas</h3><table className="min-w-full text-sm"><thead><tr>{['Mês','Faturamento','SVA','Livros','SCM','Serviço','Variação mensal','Trimestre'].map(h => <th key={h} className="p-2 text-left">{h}</th>)}</tr></thead><tbody>{rowsReceita.map(r => <tr key={r.competencia}><td className="p-2">{r.competencia}</td><td className="p-2">{nf.format(r.faturamento)}</td><td className="p-2">{nf.format(r.sva)} ({pf(r.faturamento ? (r.sva/r.faturamento)*100 : 0)})</td><td className="p-2">{nf.format(r.livros)} ({pf(r.faturamento ? (r.livros/r.faturamento)*100 : 0)})</td><td className="p-2">{nf.format(r.scm)} ({pf(r.faturamento ? (r.scm/r.faturamento)*100 : 0)})</td><td className="p-2">{nf.format(r.servico)} ({pf(r.faturamento ? (r.servico/r.faturamento)*100 : 0)})</td><td className="p-2">{pf(r.variacao)}</td><td className="p-2">{parseQuarter(r.competencia)}</td></tr>)}</tbody></table></div>
-  </div></div>;
+  const [allData, setAllData] = useState<Record<string, ApuracaoRegistro[]>>({});
+  const [currentCompanyCode, setCurrentCompanyCode] = useState('');
+  const [tab, setTab] = useState<Tab>('receitas');
+  const [folhaData, setFolhaData] = useState<Record<string, { competencia: string; proventos: number; funcionarios: number }[]>>({});
+
+  const parseHTMLFile = async (file: File) => {
+    const html = await file.text();
+    const grouped = agruparPorEmpresa(parseAPURACAOhtm(html));
+    const out: Record<string, ApuracaoRegistro[]> = {};
+    Object.entries(grouped).forEach(([cod, data]) => (out[cod] = data.registros));
+    setAllData(out);
+    setCurrentCompanyCode(Object.keys(out)[0] || '');
+  };
+
+  const registros = useMemo(() => {
+    const arr = [...(allData[currentCompanyCode] || [])];
+    return arr.sort((a, b) => a.competencia.localeCompare(b.competencia));
+  }, [allData, currentCompanyCode]);
+
+  const faturamentoTotal = registros.reduce((s, r) => s + r.saidas, 0);
+  const totalTributos = registros.reduce((s, r) => s + r.pis + r.cofins + r.icms + r.irpj + r.csll, 0);
+  const liquidez = faturamentoTotal ? ((faturamentoTotal - totalTributos) / faturamentoTotal) * 100 : 0;
+  const ticketMedio = registros.length ? faturamentoTotal / registros.length : 0;
+
+  const receitaPizza = useMemo(() => {
+    const sva = registros.reduce((s, r) => s + r.sva, 0);
+    const livros = registros.reduce((s, r) => s + r.livros, 0);
+    const scm = registros.reduce((s, r) => s + r.scm, 0);
+    const servicos = registros.reduce((s, r) => s + r.servicos, 0);
+    const outros = registros.reduce((s, r) => s + r.outros, 0);
+    return [
+      { name: 'SVA', value: sva },
+      { name: 'Livros', value: livros },
+      { name: 'SCM', value: scm },
+      { name: 'Serviços', value: servicos },
+      { name: 'Outros', value: outros },
+    ];
+  }, [registros]);
+
+  const addFolhaRow = () => {
+    if (!currentCompanyCode) return;
+    const competencia = prompt('Competência (MM/AAAA):') || '';
+    const proventos = Number(prompt('Total proventos:') || 0);
+    const funcionarios = Number(prompt('Nº funcionários:') || 0);
+    if (!competencia) return;
+    setFolhaData((s) => ({ ...s, [currentCompanyCode]: [...(s[currentCompanyCode] || []), { competencia, proventos, funcionarios }] }));
+  };
+
+  return (
+    <div className={styles.container}>
+      <div className={styles.header}><h2>Portal Fiscal XML</h2><small>Sistema de Análise Fiscal</small></div>
+
+      <label className={styles.upload}>Upload APURACAO.HTM
+        <input hidden type="file" accept=".htm,.html" onChange={(e) => e.target.files?.[0] && parseHTMLFile(e.target.files[0])} />
+      </label>
+
+      <div className={styles.selectBar}>
+        <select value={currentCompanyCode} onChange={(e) => setCurrentCompanyCode(e.target.value)}>
+          {Object.keys(allData).map((cod) => <option key={cod} value={cod}>{cod}</option>)}
+        </select>
+      </div>
+
+      <div className={styles.cards}>
+        <div className={`${styles.card} ${styles.g}`}><small>Ticket Médio</small><h3>{money(ticketMedio)}</h3></div>
+        <div className={`${styles.card} ${styles.o}`}><small>Total Clientes</small><h3>{Math.round(ticketMedio / 120)}</h3></div>
+        <div className={`${styles.card} ${styles.t}`}><small>Liquidez</small><h3>{pct(liquidez)}</h3></div>
+        <div className={`${styles.card} ${styles.r}`}><small>Faturamento Acumulado</small><h3>{money(faturamentoTotal)}</h3></div>
+      </div>
+
+      <div className={styles.tabs}>
+        {(['receitas', 'tributos', 'folha', 'trimestres'] as Tab[]).map((t) => <button key={t} className={`${styles.tab} ${tab === t ? styles.active : ''}`} onClick={() => setTab(t)}>{t}</button>)}
+        <button onClick={addFolhaRow}>+ Folha</button>
+      </div>
+
+      <div className={styles.wrap}>
+        <table>
+          <thead>{tab === 'receitas' ? <tr><th>Mês</th><th>Faturamento</th><th>SVA</th><th>SCM</th><th>Variação</th></tr> : tab === 'tributos' ? <tr><th>Mês</th><th>COFINS</th><th>ICMS</th><th>PIS</th><th>Total</th><th>Alíquota</th></tr> : tab === 'folha' ? <tr><th>Mês</th><th>Proventos</th><th>Funcionários</th></tr> : <tr><th>Trimestre</th><th>Faturamento</th><th>Tributos</th></tr>}</thead>
+          <tbody>
+            {tab === 'receitas' && registros.map((r, i) => { const p = registros[i - 1]?.saidas || 0; const d = r.saidas - p; const dv = p ? (d / p) * 100 : 0; return <tr key={r.competencia}><td>{r.competencia}</td><td>{money(r.saidas)}</td><td>{money(r.sva)} ({pct(r.saidas ? (r.sva / r.saidas) * 100 : 0)})</td><td>{money(r.scm)} ({pct(r.saidas ? (r.scm / r.saidas) * 100 : 0)})</td><td className={d >= 0 ? styles.pos : styles.neg}>{money(d)} ({pct(dv)})</td></tr>; })}
+            {tab === 'tributos' && registros.map((r) => { const total = r.pis + r.cofins + r.icms + r.irpj + r.csll; return <tr key={r.competencia}><td>{r.competencia}</td><td>{money(r.cofins)}</td><td>{money(r.icms)}</td><td>{money(r.pis)}</td><td>{money(total)}</td><td>{pct(r.saidas ? (total / r.saidas) * 100 : 0)}</td></tr>; })}
+            {tab === 'folha' && (folhaData[currentCompanyCode] || []).map((r) => <tr key={r.competencia}><td>{r.competencia}</td><td>{money(r.proventos)}</td><td>{r.funcionarios}</td></tr>)}
+            {tab === 'trimestres' && [1, 2, 3, 4].map((q) => { const rows = registros.filter((r) => Math.ceil(Number(r.competencia.split('/')[0]) / 3) === q); const fat = rows.reduce((s, r) => s + r.saidas, 0); const trib = rows.reduce((s, r) => s + r.pis + r.cofins + r.icms + r.irpj + r.csll, 0); return <tr key={q}><td>{q}º Trimestre</td><td>{money(fat)}</td><td>{money(trib)}</td></tr>; })}
+          </tbody>
+        </table>
+      </div>
+
+      <div className={styles.charts}>
+        <div className={styles.chart}><h4>Composição de Receita</h4><ResponsiveContainer width="100%" height={280}><PieChart><Pie data={receitaPizza} dataKey="value" nameKey="name">{receitaPizza.map((_, i) => <Cell key={i} fill={cores[i]} />)}</Pie><Tooltip formatter={(v: number) => money(v)} /></PieChart></ResponsiveContainer></div>
+        <div className={styles.chart}><h4>Faturamento Mensal</h4><ResponsiveContainer width="100%" height={280}><BarChart data={registros}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="competencia" /><YAxis tickFormatter={(v) => v.toLocaleString('pt-BR')} /><Tooltip formatter={(v: number) => money(v)} /><Bar dataKey="saidas" fill="rgba(26,115,232,0.75)" stroke="#1a73e8" radius={[8, 8, 0, 0]} /></BarChart></ResponsiveContainer></div>
+        <div className={styles.chart}><h4>Evolução Tributária</h4><ResponsiveContainer width="100%" height={280}><LineChart data={registros.map(r => ({ ...r, trib: r.pis + r.cofins + r.icms + r.irpj + r.csll }))}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="competencia" /><YAxis /><Tooltip formatter={(v: number) => money(v)} /><Line dataKey="trib" stroke="#d93025" fill="rgba(217,48,37,0.2)" strokeWidth={2} dot={{ r: 6 }} /></LineChart></ResponsiveContainer></div>
+      </div>
+    </div>
+  );
 }
