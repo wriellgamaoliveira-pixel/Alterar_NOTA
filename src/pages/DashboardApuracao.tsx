@@ -13,6 +13,7 @@ export default function DashboardApuracao() {
   const [currentCompanyCode, setCurrentCompanyCode] = useState('');
   const [tab, setTab] = useState<Tab>('receitas');
   const [folhaData, setFolhaData] = useState<Record<string, { competencia: string; proventos: number; funcionarios: number }[]>>({});
+  const [fileNames, setFileNames] = useState<string[]>([]);
 
   const parseHTMLFiles = async (files: FileList) => {
     const parsed = await Promise.all([...files].map(async (f) => parseAPURACAOhtm(await f.text())));
@@ -23,6 +24,7 @@ export default function DashboardApuracao() {
     const out: Record<string, ApuracaoRegistro[]> = {};
     Object.entries(grouped).forEach(([cod, data]) => (out[cod] = data.registros));
     setAllData(out);
+    setFileNames([...files].map(f=>f.name));
     setCurrentCompanyCode(Object.keys(out)[0] || '');
   };
 
@@ -49,8 +51,9 @@ export default function DashboardApuracao() {
   };
 
   return (<div className={styles.container}><div className={styles.header}><h2>Portal Fiscal XML</h2><small>Sistema de Análise Fiscal</small></div>
-    <label className={styles.upload}>Upload APURACAO.HTM (múltiplos)
+    <label className={styles.upload}><strong>Upload APURACAO.HTM (múltiplos)</strong><div>Selecione vários arquivos usando Ctrl/Shift.</div>
       <input hidden multiple type="file" accept=".htm,.html" onChange={(e) => e.target.files && parseHTMLFiles(e.target.files)} />
+      {fileNames.length>0 && <div>{fileNames.join(' • ')}</div>}
     </label>
     <div className={styles.selectBar}><select value={currentCompanyCode} onChange={(e) => setCurrentCompanyCode(e.target.value)}>{Object.keys(allData).map((cod) => <option key={cod} value={cod}>{cod}</option>)}</select></div>
     <div className={styles.cards}><div className={`${styles.card} ${styles.g}`}><small>Ticket Médio</small><h3>{money(ticketMedio)}</h3></div><div className={`${styles.card} ${styles.o}`}><small>Total Clientes</small><h3>{Math.round(ticketMedio / 120)}</h3></div><div className={`${styles.card} ${styles.t}`}><small>Liquidez</small><h3>{pct(liquidez)}</h3></div><div className={`${styles.card} ${styles.r}`}><small>Faturamento Acumulado</small><h3>{money(faturamentoTotal)}</h3></div></div>

@@ -11,3 +11,7 @@ table{width:100%;border-collapse:collapse}th{background:#1a3c5e;color:#fff;paddi
 @media (max-width: 900px){.charts{grid-template-columns:1fr}}
 
 small,h3,h4,td,th,button,select{color:#1f2937} .header small,.header h2{color:#fff}
+.container *{opacity:1 !important;}
+.container, .container p, .container small, .container h1, .container h2, .container h3, .container h4, .container th, .container td, .container label, .container select, .container button{color:#1f2937 !important;}
+.header h2,.header small{color:#ffffff !important;}
+.upload strong{color:#1a73e8 !important;}
