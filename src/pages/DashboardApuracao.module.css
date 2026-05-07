@@ -1,4 +1,4 @@
-.container{max-width:1500px;margin:0 auto;padding:16px;background:#f0f4f8;font-family:'Segoe UI','Inter',system-ui;border-radius:14px}
+.container{max-width:1500px;margin:0 auto;padding:16px;background:#f0f4f8;color:#1f2937;font-family:'Segoe UI','Inter',system-ui;border-radius:14px}
 .header{position:sticky;top:0;z-index:4;background:linear-gradient(90deg,#1a3c5e,#1a6e8e);color:#fff;padding:14px 18px;border-radius:12px;box-shadow:0 2px 8px #0002}
 .upload{margin-top:14px;border:2px dashed #1a73e8;border-radius:12px;padding:30px;text-align:center;background:#fff;cursor:pointer}
 .selectBar{display:flex;padding:14px 20px;background:#fff;box-shadow:0 1px 6px #0001;border-radius:10px;margin-top:14px}
@@ -9,3 +9,5 @@
 table{width:100%;border-collapse:collapse}th{background:#1a3c5e;color:#fff;padding:8px;text-align:left}td{padding:8px;border-bottom:1px solid #e5e7eb}.pos{color:#0d904f}.neg{color:#d93025}
 .charts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px}.chart{background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 6px #0001}
 @media (max-width: 900px){.charts{grid-template-columns:1fr}}
+
+small,h3,h4,td,th,button,select{color:#1f2937} .header small,.header h2{color:#fff}
