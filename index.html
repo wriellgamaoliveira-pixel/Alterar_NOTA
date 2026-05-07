@@ -4,22 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Portal Fiscal XML</title>
-    <style>
-      body{margin:0;font-family:'Segoe UI',system-ui;background:#0f172a;color:#f1f5f9}
-      #boot{padding:24px;text-align:center}
-    </style>
   </head>
   <body>
     <div id="root"></div>
-    <div id="boot">Carregando Portal Fiscal XML...</div>
-    <noscript>Ative o JavaScript para abrir o sistema.</noscript>
     <script type="module" src="/src/main.tsx"></script>
-    <script>
-      setTimeout(() => {
-        const root = document.getElementById('root');
-        const boot = document.getElementById('boot');
-        if (root && root.children.length > 0) boot && (boot.style.display = 'none');
-      }, 2000);
-    </script>
   </body>
 </html>
