@@ -1,17 +1,12 @@
-.container{max-width:1500px;margin:0 auto;padding:16px;background:#f0f4f8;color:#1f2937;font-family:'Segoe UI','Inter',system-ui;border-radius:14px}
-.header{position:sticky;top:0;z-index:4;background:linear-gradient(90deg,#1a3c5e,#1a6e8e);color:#fff;padding:14px 18px;border-radius:12px;box-shadow:0 2px 8px #0002}
-.upload{margin-top:14px;border:2px dashed #1a73e8;border-radius:12px;padding:30px;text-align:center;background:#fff;cursor:pointer}
-.selectBar{display:flex;padding:14px 20px;background:#fff;box-shadow:0 1px 6px #0001;border-radius:10px;margin-top:14px}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:14px}
-.card{background:#fff;border-radius:10px;padding:14px;box-shadow:0 1px 6px #0001;border-left:4px solid #1a73e8}.g{border-left-color:#0d904f}.o{border-left-color:#e37400}.p{border-left-color:#7b1fa2}.t{border-left-color:#007b83}.r{border-left-color:#d93025}
-.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.tab{border:0;background:#e8f0fe;padding:8px 12px;border-radius:8px}.active{background:#1a73e8;color:#fff}
-.wrap{overflow-x:auto;background:#fff;border-radius:10px;box-shadow:0 1px 6px #0001;margin-top:12px}
-table{width:100%;border-collapse:collapse}th{background:#1a3c5e;color:#fff;padding:8px;text-align:left}td{padding:8px;border-bottom:1px solid #e5e7eb}.pos{color:#0d904f}.neg{color:#d93025}
-.charts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px}.chart{background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 6px #0001}
-@media (max-width: 900px){.charts{grid-template-columns:1fr}}
-
-small,h3,h4,td,th,button,select{color:#1f2937} .header small,.header h2{color:#fff}
-.container *{opacity:1 !important;}
-.container, .container p, .container small, .container h1, .container h2, .container h3, .container h4, .container th, .container td, .container label, .container select, .container button{color:#1f2937 !important;}
-.header h2,.header small{color:#ffffff !important;}
-.upload strong{color:#1a73e8 !important;}
+.container{max-width:1500px;margin:0 auto;padding:12px;background:#f0f4f8;color:#2b2f33;font-family:'Segoe UI','Inter',system-ui}
+.header{position:sticky;top:0;z-index:4;background:linear-gradient(90deg,#1a3c5e,#1a6e8e);padding:14px 16px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;color:#fff}
+.actions button{margin-left:8px;border:0;border-radius:8px;padding:10px 12px;font-weight:700}.reset{background:#fff;color:#1a3c5e}.load{background:#0d904f;color:#fff}
+.upload{margin-top:12px;background:#e9f3ee;border:2px dashed #58c17a;border-radius:14px;padding:22px;text-align:center}
+.selectBar{display:flex;align-items:center;gap:10px;background:#fff;padding:12px;border-radius:10px;box-shadow:0 1px 4px #0001;margin-top:10px}
+.search{flex:1;border:2px solid #222;border-radius:10px;padding:8px 12px}.badge{background:#d4e4fc;border-radius:999px;padding:6px 10px;font-weight:600;color:#28466b}
+.toggle{border:1px solid #1a73e8;border-radius:8px;padding:8px 10px;background:#fff}.activeBtn{background:#1a73e8;color:#fff}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-top:12px}.card{background:#fff;border-radius:10px;padding:12px;border-left:4px solid #1a73e8}.g{border-left-color:#0d904f}.o{border-left-color:#e37400}.p{border-left-color:#7b1fa2}.t{border-left-color:#007b83}.r{border-left-color:#d93025}
+.tabs{display:flex;gap:8px;margin:10px 0}.tab{border:1px solid #1d2f47;background:#f5f8fc;border-radius:10px;padding:8px 14px;font-weight:700}.active{background:#1a73e8;color:#fff}
+.wrap{overflow-x:auto;background:#fff;border-radius:10px;box-shadow:0 1px 6px #0001}table{width:100%;border-collapse:collapse}th{background:#1a3c5e;color:#fff;padding:8px;text-align:left}td{padding:8px;border-bottom:1px solid #dfe7ef}.pos{color:#0d904f}.neg{color:#d93025}
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}.chart{background:#fff;border-radius:12px;padding:14px;box-shadow:0 1px 6px #0001}
+@media(max-width:900px){.charts{grid-template-columns:1fr}}
