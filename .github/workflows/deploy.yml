@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - 'codex/**'
+      - work
   workflow_dispatch:
 
 permissions:
