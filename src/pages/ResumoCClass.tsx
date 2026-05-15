@@ -209,6 +209,29 @@ export default function ResumoCClass() {
         </div>
       </div>
 
+
+      <div className="mb-6 grid gap-4 lg:grid-cols-2">
+        <div className="rounded-xl border border-[#334155] bg-[#1e293b] p-5">
+          <h3 className="mb-3 text-sm font-semibold text-[#f1f5f9]">Estrutura Operacional (Importação)</h3>
+          <ul className="space-y-2 text-sm text-[#cbd5e1]">
+            <li>• Entrada: ZIP contendo XMLs fiscais do módulo ativo.</li>
+            <li>• Processamento: leitura de notas e produtos via parser local.</li>
+            <li>• Agregação: consolidação por cClass, CFOP e valores de item.</li>
+            <li>• Saída: visão analítica + exportação CSV detalhada.</li>
+          </ul>
+        </div>
+        <div className="rounded-xl border border-[#334155] bg-[#1e293b] p-5">
+          <h3 className="mb-3 text-sm font-semibold text-[#f1f5f9]">Tags/Campos Operacionais</h3>
+          <div className="flex flex-wrap gap-2 text-xs">
+            {['cClass', 'CFOP', 'xProd', 'NCM', 'vProd', 'ICMS', 'IPI', 'PIS', 'COFINS'].map((tag) => (
+              <span key={tag} className="rounded-full border border-[#475569] bg-[#0f172a] px-3 py-1 text-[#93c5fd]">
+                {tag}
+              </span>
+            ))}
+          </div>
+          <p className="mt-3 text-xs text-[#94a3b8]">Campos exibidos no relatório são derivados da importação do XML e agregados por cClass.</p>
+        </div>
+      </div>
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard icon={FolderOpen} label="Total Arquivos" value={notas.length} color="#38bdf8" />
         <KpiCard icon={DollarSign} label="Valor Total" value={formatCurrency(cClassData.totalValor)} color="#22c55e" />
