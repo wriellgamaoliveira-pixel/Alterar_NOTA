@@ -10,6 +10,7 @@ import {
   FileSpreadsheet,
   FolderTree,
   Landmark,
+  ChartNoAxesCombined,
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -21,6 +22,7 @@ const navLinks = [
   { label: 'Alteração Lote', path: '/alteracao-lote', icon: Edit3 },
   { label: 'Apuração', path: '/apuracao/dashboard', icon: BarChart3 },
   { label: 'Entrada DIFAL', path: '/apuracao/difal', icon: Receipt },
+  { label: 'Relatórios', path: '/relatorios/faturamento-mensal', icon: ChartNoAxesCombined },
 ];
 
 
