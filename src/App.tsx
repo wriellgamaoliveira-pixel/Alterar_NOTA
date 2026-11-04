@@ -16,6 +16,7 @@ import BKShell from '@/components/shared/BKShell';
 import BKImport from '@/pages/BKImport';
 import BKDocuments from '@/pages/BKDocuments';
 import BKConfigPage from '@/pages/BKConfig';
+import SolicitarAcesso from '@/pages/SolicitarAcesso';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <main>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/solicitar-acesso" element={<SolicitarAcesso />} />
             <Route path="/nota-unica" element={<NotaUnica />} />
             <Route path="/resumo-cclass" element={<ResumoCClass />} />
             <Route path="/resumo-imposto" element={<ResumoImposto />} />
