@@ -17,10 +17,11 @@ import BKImport from '@/pages/BKImport';
 import BKDocuments from '@/pages/BKDocuments';
 import BKConfigPage from '@/pages/BKConfig';
 import SolicitarAcesso from '@/pages/SolicitarAcesso';
+import AccessGate from '@/components/shared/AccessGate';
 
 function App() {
   return (
-    <ModuleProvider>
+    <AccessGate><ModuleProvider>
       <BKProvider>
         <div className="min-h-screen bg-[#0f172a]">
           <Navbar />
@@ -49,7 +50,7 @@ function App() {
           </main>
         </div>
       </BKProvider>
-    </ModuleProvider>
+    </ModuleProvider></AccessGate>
   );
 }
 

@@ -1,28 +1,21 @@
 import { useState } from 'react';
 import { Copy, MessageCircle } from 'lucide-react';
+import { getBrowserId } from '@/services/accessLicense';
 
 const WHATSAPP_NUMBER = '5563992038278';
-const BROWSER_ID_KEY = 'portal-fiscal-access-browser-id';
-
-function browserId() {
-  const saved = localStorage.getItem(BROWSER_ID_KEY);
-  if (saved) return saved;
-  const created = crypto.randomUUID();
-  localStorage.setItem(BROWSER_ID_KEY, created);
-  return created;
-}
-
-export default function SolicitarAcesso() {
+export default function SolicitarAcesso({ onActivate, accessMessage }: { onActivate?: (code: string) => Promise<void>; accessMessage?: string }) {
   const [username, setUsername] = useState('');
   const [request, setRequest] = useState<{ username: string; code: string; message: string }>();
   const [feedback, setFeedback] = useState('');
+  const [activationCode, setActivationCode] = useState('');
+  const [activating, setActivating] = useState(false);
 
   function generateRequest(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const name = username.trim();
     if (!name) return;
     try {
-      const code = browserId();
+      const code = getBrowserId();
       const message = [
         'Solicitação de acesso — Portal Fiscal XML',
         `Usuário: ${name}`,
@@ -51,6 +44,7 @@ export default function SolicitarAcesso() {
       <h1 className="text-2xl font-bold text-white">Solicitar acesso</h1>
       <p className="mt-2 text-sm text-slate-400">Informe seu usuário e envie o pedido ao responsável pelo WhatsApp.</p>
     </div>
+    {accessMessage && <p role="status" className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-amber-100">{accessMessage}</p>}
     <form onSubmit={generateRequest} className="space-y-4 rounded-xl border border-slate-700 bg-slate-900/70 p-5">
       <label className="bk-label">Nome de usuário
         <input required maxLength={80} autoComplete="username" className="bk-input" value={username} onChange={(event) => { setUsername(event.target.value); setRequest(undefined); setFeedback(''); }} placeholder="Ex.: gama" />
@@ -68,6 +62,16 @@ export default function SolicitarAcesso() {
       <p className="text-xs text-slate-400">Destino: +55 63 99203-8278. A mensagem abre preenchida; confirme o envio no WhatsApp. Enviar o pedido não libera o acesso automaticamente.</p>
     </section>}
     {feedback && <p role="status" className="text-sm text-sky-200">{feedback}</p>}
-    <p className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-amber-100">Esta tela prepara a solicitação. A ativação por código e o bloqueio por vencimento ainda não estão disponíveis.</p>
+    {onActivate && <form className="space-y-4 rounded-xl border border-sky-500/30 bg-slate-900/70 p-5" onSubmit={async (event) => {
+      event.preventDefault(); setActivating(true);
+      try { await onActivate(activationCode); }
+      catch (error) { setFeedback(error instanceof Error ? error.message : 'Não foi possível ativar o acesso.'); }
+      finally { setActivating(false); }
+    }}>
+      <h2 className="font-semibold text-white">Já recebeu a liberação?</h2>
+      <label className="bk-label">Código de liberação<textarea required rows={4} value={activationCode} onChange={(event) => setActivationCode(event.target.value)} className="bk-input w-full" placeholder="Cole o código completo recebido do responsável" /></label>
+      <button disabled={activating || !activationCode.trim()} className="bk-button disabled:opacity-50">{activating ? 'Verificando...' : 'Ativar acesso'}</button>
+      <p className="text-xs text-slate-400">A liberação vale somente para este navegador e pelo prazo autorizado. Ao vencer, todas as telas serão bloqueadas novamente.</p>
+    </form>}
   </div>;
 }
