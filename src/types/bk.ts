@@ -125,6 +125,7 @@ export interface BKPreviewItem {
   parsed?: ParsedFiscalFile;
   result: 'pronta' | 'atualizar' | 'incluido' | 'registrado' | 'inconsistencia' | 'fora-periodo';
   message: string;
+  requiresUnitConfirmation?: boolean;
 }
 
 export interface BKCFOPConfig {

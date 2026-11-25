@@ -3,6 +3,7 @@ import { CheckCircle2, FolderOpen, Play, Save, Upload, XCircle } from 'lucide-re
 import { useBK } from '@/context/BKContext';
 import { parseBKXml } from '@/parsers/bkParser';
 import type { BKPreviewItem } from '@/types/bk';
+import { resolveImportUnit } from '@/services/bkImportUnit';
 
 const resultLabel: Record<BKPreviewItem['result'], string> = {
   pronta: 'Pronta para importar', atualizar: 'Atualizar histórico', incluido: 'Incluído na nova nota',
@@ -38,11 +39,17 @@ export default function BKImport() {
         const day = fiscalDate.slice(0, 10);
         let status: BKPreviewItem['result'] = 'pronta';
         let detail = 'Validação concluída';
+        let requiresUnitConfirmation = false;
         if ((from && day < from) || (to && day > to)) {
           status = 'fora-periodo'; detail = 'Data fiscal fora do intervalo escolhido';
         } else if (result.kind === 'document') {
-          const unit = units.find((candidate) => candidate.cnpj === result.document.issuerTaxId);
-          if (!unit) { status = 'inconsistencia'; detail = `CNPJ emitente ${result.document.issuerTaxId || 'não informado'} não pertence às unidades cadastradas`; }
+          const { unit, canConfirmWithoutUnit } = resolveImportUnit(result.document.issuerTaxId, units);
+          if (!unit) {
+            status = 'inconsistencia';
+            detail = 'Emitente não vinculado às unidades cadastradas. Confira se esta nota de fornecedor deve ser importada sem unidade.';
+            requiresUnitConfirmation = canConfirmWithoutUnit;
+            if (!canConfirmWithoutUnit) detail = 'CNPJ/CPF do emitente ausente ou com formato inválido.';
+          }
           else {
             result.document.unitId = unit.id;
             const saved = documents.find((item) =>
@@ -57,7 +64,7 @@ export default function BKImport() {
           else if (saved?.events.some((event) => event.id === result.event.id)) { status = 'registrado'; detail = 'Evento já consta no histórico'; }
           else { status = saved ? 'atualizar' : 'incluido'; detail = saved ? 'Novo evento para nota existente' : 'Evento será anexado à NF-e desta seleção'; }
         }
-        parsed.push({ id: `${file.name}-${index}`, fileName: file.webkitRelativePath || file.name, parsed: result, result: status, message: detail });
+        parsed.push({ id: `${file.name}-${index}`, fileName: file.webkitRelativePath || file.name, parsed: result, result: status, message: detail, requiresUnitConfirmation });
       } catch (error) {
         parsed.push({ id: `${file.name}-${index}`, fileName: file.webkitRelativePath || file.name, result: 'inconsistencia', message: error instanceof Error ? error.message : 'Falha ao ler XML' });
       }
@@ -76,9 +83,21 @@ export default function BKImport() {
     const accepted = preview.filter((item) => ['pronta', 'atualizar', 'incluido'].includes(item.result) && item.parsed);
     const incomingDocuments = accepted.flatMap((item) => item.parsed?.kind === 'document' ? [item.parsed.document] : []);
     const events = accepted.flatMap((item) => item.parsed?.kind === 'event' ? [{ accessKey: item.parsed.accessKey, event: item.parsed.event }] : []);
+    const withoutUnit = incomingDocuments.filter((item) => !item.unitId);
+    if (withoutUnit.length && !window.confirm(`Confirmar a gravação de ${withoutUnit.length} nota(s) sem unidade identificada? O emitente original será preservado e nenhuma unidade será cadastrada automaticamente.`)) return;
     importBatch(incomingDocuments, events);
     setPreview((items) => items.map((item) => accepted.some((acceptedItem) => acceptedItem.id === item.id) ? { ...item, result: 'registrado', message: 'Gravado com segurança' } : item));
     setMessage(`${incomingDocuments.length} NF-e(s) e ${events.length} evento(s) processados. Histórico e duplicidades foram preservados.`);
+  }
+
+  function confirmWithoutUnit(id: string) {
+    setPreview((items) => items.map((item) => {
+      if (item.id !== id || !item.requiresUnitConfirmation || item.parsed?.kind !== 'document') return item;
+      const incoming = item.parsed.document;
+      const saved = documents.find((document) => (incoming.accessKey && document.accessKey === incoming.accessKey) || document.complementaryId === incoming.complementaryId);
+      const result = saved ? (incoming.events.some((event) => !saved.events.some((old) => old.id === event.id)) ? 'atualizar' : 'registrado') : 'pronta';
+      return { ...item, result, requiresUnitConfirmation: false, message: 'Conferida pelo usuário: importação sem unidade vinculada. Emitente original preservado.' };
+    }));
   }
 
   return (
@@ -118,7 +137,7 @@ export default function BKImport() {
           <tbody>{preview.length === 0 ? <tr><td colSpan={11} className="py-12 text-center text-slate-500">Selecione XMLs ou uma pasta para gerar a prévia.</td></tr> : preview.map((item) => {
             const doc = item.parsed?.kind === 'document' ? item.parsed.document : undefined;
             const unit = units.find((candidate) => candidate.id === doc?.unitId);
-            return <tr key={item.id}><td className="max-w-[220px] truncate" title={item.fileName}>{item.fileName}</td><td>{item.parsed?.kind === 'event' ? 'Evento fiscal' : 'NF-e'}</td><td>{doc?.number || '—'}</td><td>{doc?.issuerName || '—'}</td><td>{unit?.nome || '—'}</td><td>{(doc?.issueDate || (item.parsed?.kind === 'event' ? item.parsed.event.date : '')).slice(0, 10) || '—'}</td><td>{doc?.cfops.join(', ') || '—'}</td><td>{doc?.category || '—'}</td><td>{doc ? `${(doc.netWeight || doc.commercialQuantity).toLocaleString('pt-BR')} kg` : '—'}</td><td>{doc?.invoiceValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) || '—'}</td><td><div className={`flex items-center gap-1.5 ${item.result === 'inconsistencia' ? 'text-red-300' : item.result === 'registrado' || item.result === 'fora-periodo' ? 'text-slate-400' : 'text-emerald-300'}`}>{item.result === 'inconsistencia' ? <XCircle className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}<span title={item.message}>{resultLabel[item.result]}</span></div></td></tr>;
+            return <tr key={item.id}><td className="max-w-[220px] truncate" title={item.fileName}>{item.fileName}</td><td>{item.parsed?.kind === 'event' ? 'Evento fiscal' : 'NF-e'}</td><td>{doc?.number || '—'}</td><td>{doc?.issuerName || '—'}</td><td>{unit?.nome || '—'}</td><td>{(doc?.issueDate || (item.parsed?.kind === 'event' ? item.parsed.event.date : '')).slice(0, 10) || '—'}</td><td>{doc?.cfops.join(', ') || '—'}</td><td>{doc?.category || '—'}</td><td>{doc ? `${(doc.netWeight || doc.commercialQuantity).toLocaleString('pt-BR')} kg` : '—'}</td><td>{doc?.invoiceValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) || '—'}</td><td className="min-w-72 max-w-96"><div className={`flex items-center gap-1.5 ${item.result === 'inconsistencia' ? 'text-red-300' : item.result === 'registrado' || item.result === 'fora-periodo' ? 'text-slate-400' : 'text-emerald-300'}`}>{item.result === 'inconsistencia' ? <XCircle className="h-4 w-4 shrink-0" /> : <CheckCircle2 className="h-4 w-4 shrink-0" />}<span title={item.message}>{resultLabel[item.result]}</span></div><p className="mt-1 whitespace-normal text-xs text-slate-400">{item.message}</p>{item.requiresUnitConfirmation && <button type="button" onClick={() => confirmWithoutUnit(item.id)} className="bk-button-secondary mt-2 text-xs">Confirmar importação sem unidade</button>}</td></tr>;
           })}</tbody></table>
         </div>
       </section>
